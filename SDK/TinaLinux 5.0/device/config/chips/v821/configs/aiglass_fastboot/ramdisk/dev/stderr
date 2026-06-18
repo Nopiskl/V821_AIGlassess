@@ -1,0 +1,190 @@
+*
+* Visual Studio Code Server
+*
+* By using the software, you agree to
+* the Visual Studio Code Server License Terms (https://aka.ms/vscode-server-license) and
+* the Microsoft Privacy Statement (https://privacy.microsoft.com/en-US/privacystatement).
+*
+Server bound to 127.0.0.1:42377 (IPv4)
+Extension host agent listening on 42377
+
+[16:00:12] 
+
+
+
+
+[reconnection-grace-time] No CLI argument provided, using default: 10800000ms (10800s)
+[16:00:12] Extension host agent started.
+[16:00:12] [127.0.0.1][46c094ff][ExtensionHostConnection] New connection established.
+[16:00:12] [127.0.0.1][e1da6699][ManagementConnection] New connection established.
+[16:00:12] [127.0.0.1][46c094ff][ExtensionHostConnection] <2037> Launched Extension Host Process.
+[16:00:12] [127.0.0.1][46c094ff][ExtensionHostConnection] <2037> [reconnection-grace-time] Extension host: read VSCODE_RECONNECTION_GRACE_TIME=10800000ms (10800s)
+
+rejected promise not handled within 1 second: CodeExpectedError: Could not find pty 10 on pty host
+stack trace: CodeExpectedError: Could not find pty 10 on pty host
+    at U._throwIfNoPty (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:7638)
+    at U.updateIcon (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:2145)
+    at V.t.<computed> (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:421:3476)
+    at Object.call (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:404:4887)
+    at Er.onPromise (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:87125)
+    at Er.onRawMessage (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:86548)
+    at Ut.value (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:85839)
+    at v._deliver (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3043)
+    at v.fire (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3361)
+    at process.x (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:400:31768)
+    at process.emit (node:events:519:28)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[16:00:18] Error [CodeExpectedError]: Could not find pty 10 on pty host
+    at U._throwIfNoPty (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:7638)
+    at U.updateIcon (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:2145)
+    at V.t.<computed> (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:421:3476)
+    at Object.call (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:404:4887)
+    at Er.onPromise (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:87125)
+    at Er.onRawMessage (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:86548)
+    at Ut.value (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:85839)
+    at v._deliver (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3043)
+    at v.fire (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3361)
+    at process.x (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:400:31768)
+    at process.emit (node:events:519:28)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: CodeExpectedError: Could not find pty 10 on pty host
+stack trace: CodeExpectedError: Could not find pty 10 on pty host
+    at U._throwIfNoPty (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:7638)
+    at U.updateTitle (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:2083)
+    at V.t.<computed> (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:421:3476)
+    at Object.call (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:404:4887)
+    at Er.onPromise (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:87125)
+    at Er.onRawMessage (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:86548)
+    at Ut.value (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:85839)
+    at v._deliver (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3043)
+    at v.fire (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3361)
+    at process.x (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:400:31768)
+    at process.emit (node:events:519:28)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[16:00:18] Error [CodeExpectedError]: Could not find pty 10 on pty host
+    at U._throwIfNoPty (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:7638)
+    at U.updateTitle (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:422:2083)
+    at V.t.<computed> (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:421:3476)
+    at Object.call (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:404:4887)
+    at Er.onPromise (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:87125)
+    at Er.onRawMessage (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:86548)
+    at Ut.value (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:85839)
+    at v._deliver (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3043)
+    at v.fire (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:402:3361)
+    at process.x (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/vs/platform/terminal/node/ptyHostMain.js:400:31768)
+    at process.emit (node:events:519:28)
+    at emit (node:internal/child_process:949:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/snap-private-tmp'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/snap-private-tmp'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-ModemManager.service-EzWL7h'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-ModemManager.service-EzWL7h'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-colord.service-hJ1yEh'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-colord.service-hJ1yEh'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-switcheroo-control.service-bgS4kh'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-switcheroo-control.service-bgS4kh'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-logind.service-9R5ash'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-logind.service-9R5ash'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-resolved.service-VPBgRe'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-resolved.service-VPBgRe'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-timedated.service-AwqwJi'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-timedated.service-AwqwJi'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-timesyncd.service-uVyw6f'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-systemd-timesyncd.service-uVyw6f'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-upower.service-xXUIOf'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/systemd-private-a374cb0d718e402d82900971b76e5a34-upower.service-xXUIOf'
+}
+[node.js fs] readdir with filetypes failed with error:  Error: EACCES: permission denied, scandir '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/tracker-extract-files.125'
+    at async Object.readdir (node:internal/fs/promises:952:18)
+    at async y5 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96131)
+    at async W1 (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:96060)
+    at async Object.oh (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:403:95925)
+    at async o.readdir (file:///home/alientek/.vscode-server/bin/cfbea10c5ffb233ea9177d34726e6056e89913dc/out/server-main.js:443:19827) {
+  errno: -13,
+  code: 'EACCES',
+  syscall: 'scandir',
+  path: '/home/alientek/Avaota-F1/tina-v821-release/device/config/chips/v821/configs/aiglass/ramdisk/var/tracker-extract-files.125'
+}
