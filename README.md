@@ -1,23 +1,25 @@
 # V821 AI Glass
 
-本仓库主要包含两套 V821 AI 眼镜相关方案：
+Language: English | [中文](README_CN.md)
+
+This repository contains two V821 AI glasses related solutions:
 
 1. `v821-aiglass`
 2. `v821-aiglass_fastboot`
 
-## 项目说明
+## Project Overview
 
 ### v821-aiglass
 
-`v821-aiglass` 是面向完整 AI Glass 形态的板级配置方案，使用光波导模组，可实现较完整的专业 AI 眼镜设计。
+`v821-aiglass` is a board-level configuration solution for a complete AI Glass product form. It uses an optical waveguide module and is intended for a more complete professional AI glasses design.
 
-当前支持能力：
+Currently supported capabilities:
 
-- 接入大模型 API 与图片识别能力
-- 支持 `320 x 640` 图像显示与文字显示
-- 支持一键拍摄、录像等功能
+- Large model API integration and image recognition
+- `320 x 640` image display and text display
+- One-click photo capture, video recording, and related functions
 
-由于整机体积限制，该方案目前已完成 testboard 板级验证与模组可行性验证，整机组装仍在推进中。
+Due to product size constraints, this solution has completed testboard-level validation and module feasibility validation. Full device assembly is still in progress.
 
 <p>
   <a href="test_image/1.png"><img src="test_image/1.png" width="180" alt="v821-aiglass preview 1"></a>
@@ -27,27 +29,27 @@
 
 ### v821-aiglass_fastboot
 
-`v821-aiglass_fastboot` 是基于 fastboot 的快速启动方案。由于 fastboot 与 SoC 耦合较深，可开发自由度相对受限，大部分配置来自原厂方案。
+`v821-aiglass_fastboot` is a fast boot solution based on fastboot. Because fastboot is tightly coupled with the SoC, development flexibility is relatively limited, and most of the configuration comes from the vendor reference solution.
 
-该方案参考了全志公板 `board` 与索智 V821 AI 眼镜开发板，并非传统 Linux 启动流程。通过 fastboot 可实现快速抓图、拍照与录像，整体控制在 1 秒以内。
+This solution refers to the Allwinner public `board` and the Sochip V821 AI glasses development board. It does not follow a traditional Linux boot flow. With fastboot, it can perform fast image capture, photo capture, and video recording, with the overall flow controlled within 1 second.
 
-当前支持能力：
+Currently supported capabilities:
 
-- 接入大模型 API 与语音识别能力
-- 支持呼叫 AI、拍照转发、智能分析
-- 支持一键拍摄、录像等功能
+- Large model API integration and speech recognition
+- AI calling, photo forwarding, and intelligent analysis
+- One-click photo capture, video recording, and related functions
 
 <p>
   <a href="test_image/ai_glass.png"><img src="test_image/ai_glass.png" width="260" alt="v821-aiglass fastboot preview"></a>
 </p>
 
-## 仓库目录
+## Repository Layout
 
 ### Hardware_for_test
 
-硬件测试相关内容，参考 AvaotaF1 设计版型。
+Hardware test related content, using the AvaotaF1 design form factor as a reference.
 
-当前提供了用于模组测试与功能验证的 testboard，适用于 `v821-aiglass`。后续会继续跟进更小尺寸的 PCB 设计，以便装入眼镜结构中。
+A testboard is currently provided for module testing and functional validation, and it is intended for `v821-aiglass`. Smaller PCB designs will continue to be explored so the hardware can fit into a glasses structure.
 
 <p>
   <a href="test_image/testboard.png"><img src="test_image/testboard.png" width="180" alt="testboard preview"></a>
@@ -55,19 +57,19 @@
 
 ### Application
 
-应用程序相关内容，适用于 `v821-aiglass`。
+Application related content for `v821-aiglass`.
 
-当前提供了 LVGL / Qt 程序 demo，用于后续深度开发。目前 demo 主要用于功能验证，通用性较强，但尚未完全适配硬件。
+LVGL / Qt demo applications are currently provided for future in-depth development. The demos are mainly used for functional validation at this stage. They are relatively general-purpose, but they have not yet been fully adapted to the hardware.
 
 ### SDK/TinaLinux 5.0
 
-SDK 补丁与板级配置相关内容，主要包含：
+SDK patches and board-level configuration content, mainly including:
 
 - `v821-aiglass`
 - `v821-aiglass_fastboot`
 
-## 补丁使用方法
+## How to Use the Patches
 
-将补丁文件复制到 SDK 对应目录下，后续可参考全志在线文档继续进行板级开发：
+Copy the patch files to the corresponding SDK directories. For further board-level development, refer to the Allwinner online documentation:
 
 https://docs.aw-ol.com/docs/soc/v821/
