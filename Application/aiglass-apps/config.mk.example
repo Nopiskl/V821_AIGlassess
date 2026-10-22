@@ -1,0 +1,12 @@
+# 复制为 local.mk 后按需修改。local.mk 已被 .gitignore 忽略。
+
+# AIGLASS_BSP_ROOT := /absolute/path/to/tina-v821-release
+# AIGLASS_CHIP := v821
+# AIGLASS_BOARD := aiglass
+# 本仓库的 fastboot 方案使用：
+# AIGLASS_BOARD := aiglass_fastboot
+# AIGLASS_JOBS := 8
+# AIGLASS_BUILD_DIR := $(CURDIR)/build
+# AIGLASS_OUTPUT_DIR := $(CURDIR)/output
+# AIGLASS_DIST_DIR := $(CURDIR)/dist
+# AIGLASS_SOURCE_DIR := $(CURDIR)/apps

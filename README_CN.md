@@ -22,9 +22,9 @@
 由于整机体积限制，该方案目前已完成 testboard 板级验证与模组可行性验证，整机组装仍在推进中。
 
 <p>
-  <a href="test_image/1.png"><img src="test_image/1.png" width="180" alt="v821-aiglass preview 1"></a>
-  <a href="test_image/debug.png"><img src="test_image/debug.png" width="180" alt="v821-aiglass debug preview"></a>
-  <a href="test_image/2.png"><img src="test_image/2.png" width="180" alt="v821-aiglass preview 2"></a>
+  <a href="Application/Image/1.png"><img src="Application/Image/1.png" width="180" alt="v821-aiglass preview 1"></a>
+  <a href="Application/Image/debug.png"><img src="Application/Image/debug.png" width="180" alt="v821-aiglass debug preview"></a>
+  <a href="Application/Image/2.png"><img src="Application/Image/2.png" width="180" alt="v821-aiglass preview 2"></a>
 </p>
 
 ### v821-aiglass_fastboot
@@ -40,7 +40,7 @@
 - 支持一键拍摄、录像等功能
 
 <p>
-  <a href="test_image/ai_glass.png"><img src="test_image/ai_glass.png" width="260" alt="v821-aiglass fastboot preview"></a>
+  <a href="Application/Image/ai_glass.png"><img src="Application/Image/ai_glass.png" width="260" alt="v821-aiglass fastboot preview"></a>
 </p>
 
 ## 仓库目录
@@ -52,14 +52,27 @@
 当前提供了用于模组测试与功能验证的 testboard，适用于 `v821-aiglass`。后续会继续跟进更小尺寸的 PCB 设计，以便装入眼镜结构中。
 
 <p>
-  <a href="test_image/testboard.png"><img src="test_image/testboard.png" width="180" alt="testboard preview"></a>
+  <a href="Application/Image/testboard.png"><img src="Application/Image/testboard.png" width="180" alt="testboard preview"></a>
 </p>
 
 ### Application
 
-应用程序相关内容，适用于 `v821-aiglass`。
+[`Application/aiglass-apps`](Application/aiglass-apps/README.md) 包含 C/C++ 应用源码、AGLink 支持库，以及 normal、拍照、录音、下载、OTA、录像和直播 7 个应用。
 
-当前提供了 LVGL / Qt 程序 demo，用于后续深度开发。目前 demo 主要用于功能验证，通用性较强，但尚未完全适配硬件。
+[`Application/lvgl-home`](Application/lvgl-home/) 提供 LVGL 8.x 的 `320 × 320`
+眼镜主界面源码，显示日期、星期、时间和秒数，采用纯文字与图形线框，无背景图片。
+该界面直接接入已有 LVGL 应用，不包含 LVGL 库，也不加入上述 7 个应用的独立构建。
+
+`Application/Makefile` 提供统一构建入口，默认使用已启用这些应用的 `aiglass_fastboot` 板型。编译需要完整的 Tina V821 BSP、交叉工具链及已构建的依赖；本仓库的 `SDK/TinaLinux 5.0` 仅包含补丁。
+
+```bash
+make -C Application list
+make -C Application check AIGLASS_BSP_ROOT=/absolute/path/to/tina-v821-release
+make -C Application all AIGLASS_BSP_ROOT=/absolute/path/to/tina-v821-release
+make -C Application package AIGLASS_BSP_ROOT=/absolute/path/to/tina-v821-release
+```
+
+依赖准备、rootfs 安装及 BSP 源码集成方法见[应用开发说明](Application/aiglass-apps/README.md)。编译和打包产物分别存放在 `Application/aiglass-apps/build`、`output`、`dist`，均已加入应用目录的 Git 忽略规则。
 
 ### SDK/TinaLinux 5.0
 
