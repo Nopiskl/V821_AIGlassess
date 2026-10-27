@@ -11,7 +11,7 @@
 Linux 主机可通过 [host-debug](../host-debug/README.md) 独立编译运行本模块，并与 uni-app 手机端
 联合调试。该构建提供软件显示和浏览器输入，复用本目录的 UI、服务和手机协议，禁用设备相关功能；
 无需连接 V821。构建、依赖、运行数据与测试报告均保存在工作区。
-源码复用方式、显示与输入适配、线程及通信关系见 [模拟器架构](../host-debug/ARCHITECTURE.md)。
+源码复用方式、显示与输入适配、线程及通信关系见 [模拟器架构](../../docs/architecture/host-simulator.md)。
 
 ## 页面与功能
 
@@ -60,7 +60,7 @@ VI/ISP/VENC/AI/AENC/MUX 等依赖。模块包含 cJSON 1.7.19；宿主若已有 
 
 媒体库入口为 `make -C Application local-media`，配置和依赖见
 [本地 MPP 接口](../mpp-media/README.md)。这是常电 UI 模式；与独立应用的关系见
-[运行模式](../RUNTIME_MODES.md)。MPP 构建需要完整 V821 BSP，目标编译与链接未验证。
+[运行模式](../../docs/architecture/runtime-modes.md)。MPP 构建需要完整 V821 BSP，目标编译与链接未验证。
 主机构建使用独立入口和返回 `ENOTSUP` 的媒体替代实现。
 
 宿主 `lv_conf.h` 至少启用：
@@ -153,7 +153,7 @@ lv_obj_t *view = aiglass_home_create_with_config(lv_scr_act(), &ui_config);
 数据目录须归当前进程用户所有，且不可被组或其他用户写入。文件访问限制在 notes、media、inbox
 三个平面目录内，不跟随符号链接。上传和下载文件上限均为 32 MiB；新下载/上传不覆盖同名文件。
 共用服务不自动清理异常退出遗留的 socket，清理前须确认原进程已退出。
-主机入口持有运行目录锁后清理该实例的遗留 socket，具体顺序见 [模拟器生命周期](../host-debug/ARCHITECTURE.md#4-构建与进程生命周期)。
+主机入口持有运行目录锁后清理该实例的遗留 socket，具体顺序见 [模拟器生命周期](../../docs/architecture/host-simulator.md#4-构建与进程生命周期)。
 
 媒体操作统一调用 `vm_media`：录像使用本地 VI/VENC 和可选 AI/AENC，拍照使用 JPEG VENC，
 录音使用本地 AI。停止会结束本地采集，无需等待 JL 命令。摄像头和麦克风按需启停，

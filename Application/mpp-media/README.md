@@ -1,7 +1,7 @@
 # V821 本地 MPP 媒体接口
 
 供常电 LVGL 宿主使用的 C11 媒体模块。接口为 `vm_media.h`；实现直接调用 V821 sun300iw1
-Eyesee MPP，不依赖 AGLink、RT Media 或外部音频控制端。[运行模式](../RUNTIME_MODES.md)
+Eyesee MPP，不依赖 AGLink、RT Media 或外部音频控制端。[运行模式](../../docs/architecture/runtime-modes.md)
 说明它与 `aiglass-apps` 受控模式的关系。
 
 ## 参考与适配范围

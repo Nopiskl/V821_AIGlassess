@@ -22,6 +22,23 @@ uni-app H5；商店提供本地工具与模板目录，不提供眼镜应用安�
 
 硬件验证范围为测试板与模组。眼镜硬件设计文件见 [`Hardware/V821_ai_glasses`](Hardware/V821_ai_glasses/)。
 
+## 系统架构
+
+<p align="center">
+  <a href="docs/images/SMART_AI_GLASSES_ZH.png"><img src="docs/images/SMART_AI_GLASSES_ZH.png" width="960" alt="V821 AI 眼镜系统架构：硬件接口、嵌入式计算平台、端侧功能与外部服务"></a>
+</p>
+
+[矢量图（SVG）](docs/images/SMART_AI_GLASSES_ZH.svg) · [架构与开发文档](docs/README.md)
+
+## 主机联调预览
+
+Linux 主机通过 HTTP 桥接在浏览器中展示 `640 × 480` 原生 LVGL 界面与 uni-app H5 手机伴侣。
+启动与操作方式见 [主机联调说明](Application/host-debug/README.md)。
+
+<p align="center">
+  <a href="docs/images/Simulate.png"><img src="docs/images/Simulate.png" width="960" alt="Linux 主机联调画面：左侧为 LVGL 眼镜界面，右侧为已配对的手机伴侣"></a>
+</p>
+
 ## 仓库目录
 
 ### Hardware
@@ -61,7 +78,7 @@ uni-app H5；商店提供本地工具与模板目录，不提供眼镜应用安�
 文件、笔记与设置等页面，使用 Linux 接口和可配置的 HTTP 服务。
 常电显示模式的拍照、录像和录音通过 [`Application/mpp-media`](Application/mpp-media/README.md)
 直接调用 V821 MPP；音频设备与通道可配置，不依赖 AGLink。两种模式的资源所有权、启动入口和
-协议边界见[运行模式说明](Application/RUNTIME_MODES.md)。
+协议边界见[运行模式说明](docs/architecture/runtime-modes.md)。
 该模块接入已有 LVGL 应用，LVGL 库由宿主提供，构建入口独立于上述 7 个受控应用。
 开发验证使用 Linux 主机原生构建与集成测试；V821 目标端运行未验证。
 
@@ -73,7 +90,7 @@ uni-app H5；商店提供本地工具与模板目录，不提供眼镜应用安�
 [`Application/host-debug`](Application/host-debug/README.md) 提供 Linux 主机联合调试。运行画面与手机页面
 通过同一端口预览，构建、依赖、日志及测试数据保存在工作区。主机模式不接入相机、麦克风、背光、
 真实配网或 JL；AI 服务需另行配置。源码复用、进程与线程、接口、配对、存储及测试边界见
-[模拟器架构说明](Application/host-debug/ARCHITECTURE.md)。
+[模拟器架构说明](docs/architecture/host-simulator.md)。
 
 `Application/Makefile` 提供 V821 应用的统一构建入口。编译需要完整的 Tina V821 BSP、交叉工具链及已构建的依赖；本仓库的 `SDK/TinaLinux 5.0` 仅包含补丁。手机端项目使用独立的 npm 命令。
 
@@ -89,6 +106,10 @@ make -C Application package AIGLASS_BSP_ROOT=/absolute/path/to/tina-v821-release
 ### SDK/TinaLinux 5.0
 
 包含 `v821-aiglass` 的 SDK 补丁与板级配置。
+
+### docs
+
+[项目文档](docs/README.md) 集中维护系统架构、运行模式和展示资源，并提供模块开发说明及协议文档的索引。
 
 ## 补丁使用方法
 

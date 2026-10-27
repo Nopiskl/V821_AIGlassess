@@ -4,7 +4,7 @@ Linux 主机开发环境在本机编译并运行 `lvgl-home`，通过浏览器�
 手机端文件操作实际读写主机运行目录，文字消息进入 LVGL 服务与界面。无需显示器、桌面会话、
 SDL、V821 BSP 或交叉工具链；不访问摄像头、麦克风、背光或 JL。
 
-设计与维护说明见 [Linux 主机模拟器架构](ARCHITECTURE.md)，包含源码复用、进程与线程、
+设计与维护说明见 [Linux 主机模拟器架构](../../docs/architecture/host-simulator.md)，包含源码复用、进程与线程、
 显示输入、通信与配对、文件传输、测试边界和设备集成约束。
 
 ## 启动与远程预览
@@ -162,4 +162,4 @@ AIGLASS_TEST_BINARY="$PWD/.host-debug/build-asan/aiglass-host" \
 | ASan/UBSan | 内存访问、未定义行为及正常退出路径 |
 
 默认分辨率为 640 × 480，测试记录和截图保存在工作区。设备 MPP、物理屏幕、麦克风、功耗及
-JL 协议互通属于板端验证范围。测试结构与运行边界见 [测试设计](ARCHITECTURE.md#13-测试设计)。
+JL 协议互通属于板端验证范围。测试结构与运行边界见 [测试设计](../../docs/architecture/host-simulator.md#13-测试设计)。

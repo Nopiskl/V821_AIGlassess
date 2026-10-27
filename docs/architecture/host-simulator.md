@@ -2,9 +2,9 @@
 
 本文说明 `Application/host-debug` 的构建组成、运行模型、接口、状态存储和扩展约束。
 适用于维护 LVGL 界面、手机伴侣、Linux 服务及自动测试的开发者。
-日常构建与预览命令见 [使用说明](README.md)；设备部署角色见
-[V821 运行模式](../RUNTIME_MODES.md)；业务报文定义见
-[手机通信协议 v2](../lvgl-home/README.md#手机通信协议-v2)。
+日常构建与预览命令见 [使用说明](../../Application/host-debug/README.md)；设备部署角色见
+[V821 运行模式](runtime-modes.md)；业务报文定义见
+[手机通信协议 v2](../../Application/lvgl-home/README.md#手机通信协议-v2)。
 
 ## 目录
 
@@ -45,7 +45,7 @@
 | `aiglass-apps` | JL 主控受控模式下的独立应用 | 主机不启动这些应用，不建立 AGLink 通道 |
 
 主机环境用于开发常电 UI 模式。设备上的常电 UI 模式与 JL 主控受控模式按
-[运行模式说明](../RUNTIME_MODES.md) 分别启动，主机环境不参与设备角色选择。
+[运行模式说明](runtime-modes.md) 分别启动，主机环境不参与设备角色选择。
 主机文件服务由 `aiglass_phone.c` 执行，不经过 `aiglass-apps` 的 download 应用。
 
 ### 1.2 能力范围
@@ -127,7 +127,7 @@ flowchart TB
 
 ### 3.1 编译组成
 
-[CMakeLists.txt](CMakeLists.txt) 将下列源码直接编入 `aiglass-host`，并链接 LVGL、主机 libcurl、
+[CMakeLists.txt](../../Application/host-debug/CMakeLists.txt) 将下列源码直接编入 `aiglass-host`，并链接 LVGL、主机 libcurl、
 POSIX threads 和数学库。
 
 | 源码组 | 文件 | 用途 |
@@ -173,7 +173,7 @@ JavaScript 调试页负责帧展示和事件转发。`aiglass-apps` 的媒体程
 
 `host.py` 提供 `prepare`、`build`、`run` 三个命令。
 
-1. `prepare` 根据 [dependencies.json](dependencies.json) 下载固定版本的 LVGL 源码与 curl
+1. `prepare` 根据 [dependencies.json](../../Application/host-debug/dependencies.json) 下载固定版本的 LVGL 源码与 curl
    头文件，校验归档 SHA-256，解包至 `.host-debug/deps`。
 2. `build` 执行依赖准备，再用 CMake 构建原生程序；普通产物位于 `.host-debug/build`。
 3. H5 构建使用手机工程的 npm 锁文件。缺少已安装依赖标记时执行 `npm ci`，随后运行 `build:h5`。
@@ -365,7 +365,7 @@ HTTP 请求体长度必须大于 0 且小于 16,384 字节；转为 JSON 行后�
 
 业务 socket 使用 UTF-8 JSON 行，每条报文以换行结束。可选 `id` 为字符串或数字，响应会原样带回。
 除 `hello` 和 `pair` 外，操作都必须携带有效 `credential`。报文字段和示例集中维护在
-[手机通信协议 v2](../lvgl-home/README.md#手机通信协议-v2)，此处仅定义桥接关系。
+[手机通信协议 v2](../../Application/lvgl-home/README.md#手机通信协议-v2)，此处仅定义桥接关系。
 
 业务 `ok:false` 通常仍通过 HTTP 200 返回，`code` 为负 errno。客户端必须同时检查 HTTP 状态
 和业务 `ok`。例如凭据无效返回 `-EACCES`，同名文件存在返回 `-EEXIST`，结果队列满返回 `-EAGAIN`。
@@ -412,7 +412,7 @@ HTTP 403/400/413 表示桥接层的来源、请求格式或长度校验失败；
 
 ### 8.1 标识与持久化
 
-[aiglass_pairing.c](../lvgl-home/aiglass_pairing.c) 使用系统随机数生成设备标识、配对码和凭据。
+[aiglass_pairing.c](../../Application/lvgl-home/aiglass_pairing.c) 使用系统随机数生成设备标识、配对码和凭据。
 
 | 数据 | 形式 | 存放位置与寿命 |
 | --- | --- | --- |
@@ -575,7 +575,7 @@ sequenceDiagram
 发送后，界面才向服务工作线程提交 HTTP 任务。手机投送不会直接触发模型调用。
 
 主机可以使用配置的真实 HTTP AI、翻译或文本服务。默认未配置 AI 地址，不提供自动生成的回答。
-URL、鉴权、响应格式及超时约定见 [HTTP 服务约定](../lvgl-home/README.md#http-服务约定)。
+URL、鉴权、响应格式及超时约定见 [HTTP 服务约定](../../Application/lvgl-home/README.md#http-服务约定)。
 需要音频采集的语音功能仍受硬件限制，配置 ASR 地址也不会启用主机麦克风。
 
 测试中的本地 HTTP 服务是测试夹具，返回带 `[HTTP 测试回执]` 标记的固定内容，仅用于确认请求、
@@ -625,7 +625,7 @@ Application/mobile-app/
 
 ### 12.1 启动参数
 
-以下命令均在仓库根目录执行，首次构建的环境准备见 [使用说明](README.md#启动与远程预览)。
+以下命令均在仓库根目录执行，首次构建的环境准备见 [使用说明](../../Application/host-debug/README.md#启动与远程预览)。
 
 ```bash
 python3 Application/host-debug/host.py prepare
@@ -662,7 +662,7 @@ python3 Application/host-debug/host.py run --runtime another-run --port 8789
 
 上述字段以主机入口的赋值为准，优先于环境变量。HTTP 地址、模型和鉴权等其他服务配置
 使用共用初始化逻辑；例如 `AIGLASS_CHAT_URL`、
-`AIGLASS_MODEL`、`AIGLASS_API_KEY`。完整配置见 [LVGL 说明](../lvgl-home/README.md)。
+`AIGLASS_MODEL`、`AIGLASS_API_KEY`。完整配置见 [LVGL 说明](../../Application/lvgl-home/README.md)。
 
 ### 12.3 远程预览与 H5 开发
 
@@ -692,7 +692,7 @@ python3 Application/host-debug/tests/run.py --suite native
 python3 Application/host-debug/tests/run.py --suite browser --port 8788
 ```
 
-测试浏览器的安装和环境变量见 [验证说明](README.md#验证)。测试入口不自动重建程序；源码变更后
+测试浏览器的安装和环境变量见 [验证说明](../../Application/host-debug/README.md#验证)。测试入口不自动重建程序；源码变更后
 应先构建。原生测试可指定程序路径检查 sanitizer 版本：
 
 ```bash
@@ -771,23 +771,23 @@ AIGLASS_TEST_BINARY="$PWD/.host-debug/build-asan/aiglass-host" \
 
 | 文件 | 主要入口或职责 |
 | --- | --- |
-| [host.py](host.py) | `environment()`、`prepare()`、`build()`、`run()`；构建与监督 |
-| [CMakeLists.txt](CMakeLists.txt) | 共用源文件、链接依赖、sanitizer 配置 |
-| [lv_conf.h](lv_conf.h) | 主机 LVGL 颜色、内存和组件配置 |
-| [main.c](main.c) | `flush()`、`pointer_read()`、`control()`、`handle_client()`、主循环 |
-| [media_unavailable.c](media_unavailable.c) | 主机 `vm_media` 替代实现 |
-| [bridge.py](bridge.py) | `unix_request()`、`frame_png()`、HTTP 路由与操作白名单 |
-| [web/app.js](web/app.js) | 坐标换算、输入、帧与状态轮询、完整消息显示 |
-| [web/style.css](web/style.css) | 预览布局、画面比例、消息区样式 |
-| [aiglass_home.c](../lvgl-home/aiglass_home.c) | 页面、交互、服务结果消费 |
-| [aiglass_services.c](../lvgl-home/aiglass_services.c) | 服务生命周期、任务、状态、文件基础操作 |
-| [aiglass_pairing.c](../lvgl-home/aiglass_pairing.c) | 身份生成、凭据验证、持久化和解绑 |
-| [aiglass_phone.c](../lvgl-home/aiglass_phone.c) | JSON 行协议、认证分派、文件块收发 |
-| [aiglass_http.c](../lvgl-home/aiglass_http.c) | AI、翻译、浏览和下载的 HTTP 调用 |
-| [aiglass_media.c](../lvgl-home/aiglass_media.c) | 共用服务与 `vm_media` 的转换 |
-| [device.js](../mobile-app/src/services/device.js) | 手机共享设备实例、响应式状态、路由约束 |
-| [host-device.js](../mobile-app/src/services/host-device.js) | 手机 RPC、绑定、轮询、传输任务 |
-| [blob-store.js](../mobile-app/src/services/blob-store.js) | 浏览器文件持久化与导出 |
-| [tests/run.py](tests/run.py) | 测试套件入口、浏览器测试进程管理 |
-| [tests/test_native.py](tests/test_native.py) | 原生进程和协议集成测试 |
-| [tests/host.spec.js](tests/host.spec.js) | Playwright 手机与 LVGL 联调测试 |
+| [host.py](../../Application/host-debug/host.py) | `environment()`、`prepare()`、`build()`、`run()`；构建与监督 |
+| [CMakeLists.txt](../../Application/host-debug/CMakeLists.txt) | 共用源文件、链接依赖、sanitizer 配置 |
+| [lv_conf.h](../../Application/host-debug/lv_conf.h) | 主机 LVGL 颜色、内存和组件配置 |
+| [main.c](../../Application/host-debug/main.c) | `flush()`、`pointer_read()`、`control()`、`handle_client()`、主循环 |
+| [media_unavailable.c](../../Application/host-debug/media_unavailable.c) | 主机 `vm_media` 替代实现 |
+| [bridge.py](../../Application/host-debug/bridge.py) | `unix_request()`、`frame_png()`、HTTP 路由与操作白名单 |
+| [web/app.js](../../Application/host-debug/web/app.js) | 坐标换算、输入、帧与状态轮询、完整消息显示 |
+| [web/style.css](../../Application/host-debug/web/style.css) | 预览布局、画面比例、消息区样式 |
+| [aiglass_home.c](../../Application/lvgl-home/aiglass_home.c) | 页面、交互、服务结果消费 |
+| [aiglass_services.c](../../Application/lvgl-home/aiglass_services.c) | 服务生命周期、任务、状态、文件基础操作 |
+| [aiglass_pairing.c](../../Application/lvgl-home/aiglass_pairing.c) | 身份生成、凭据验证、持久化和解绑 |
+| [aiglass_phone.c](../../Application/lvgl-home/aiglass_phone.c) | JSON 行协议、认证分派、文件块收发 |
+| [aiglass_http.c](../../Application/lvgl-home/aiglass_http.c) | AI、翻译、浏览和下载的 HTTP 调用 |
+| [aiglass_media.c](../../Application/lvgl-home/aiglass_media.c) | 共用服务与 `vm_media` 的转换 |
+| [device.js](../../Application/mobile-app/src/services/device.js) | 手机共享设备实例、响应式状态、路由约束 |
+| [host-device.js](../../Application/mobile-app/src/services/host-device.js) | 手机 RPC、绑定、轮询、传输任务 |
+| [blob-store.js](../../Application/mobile-app/src/services/blob-store.js) | 浏览器文件持久化与导出 |
+| [tests/run.py](../../Application/host-debug/tests/run.py) | 测试套件入口、浏览器测试进程管理 |
+| [tests/test_native.py](../../Application/host-debug/tests/test_native.py) | 原生进程和协议集成测试 |
+| [tests/host.spec.js](../../Application/host-debug/tests/host.spec.js) | Playwright 手机与 LVGL 联调测试 |

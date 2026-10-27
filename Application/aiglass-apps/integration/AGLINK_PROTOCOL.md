@@ -153,7 +153,7 @@ code 的完整定义以 BSP UAPI 为准；`POWER_OFF` 不是成功响应。
 - 传输依赖 BSP 的预编译 AGLink 库、E907 桥接及板级 UART 配置。完整 UART 线协议须依据
   供应商实现或抓包结果核实；JL 端协议需要独立适配。
 - BSP 启动服务和硬件资源分配由固件集成负责。常电与受控模式的配置要求见
-  [运行模式](../../RUNTIME_MODES.md)。
+  [运行模式](../../../docs/architecture/runtime-modes.md)。
 - 可选 `libaiglass_media.a` 是进程内受控媒体 API，不是 UART 命令服务；其主动开始/停止调用
   约定见 [受控媒体接口](CONTROLLED_MEDIA.md)，与原七个应用的自动收尾策略不同。
 - 验证范围限于静态代码与协议契约检查；目标端构建、串口互通、音频及摄像头运行未验证。

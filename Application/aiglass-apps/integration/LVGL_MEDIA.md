@@ -5,6 +5,6 @@
 
 `aiglass-apps` 用于 JL 主控、V821 不显示的受控模式：
 
-- [两种运行模式与启动入口](../../RUNTIME_MODES.md)
+- [两种运行模式与启动入口](../../../docs/architecture/runtime-modes.md)
 - [AGLink 协议与操作时序](AGLINK_PROTOCOL.md)
 - [可选受控媒体 C 接口](CONTROLLED_MEDIA.md)

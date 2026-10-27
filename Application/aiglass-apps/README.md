@@ -1,7 +1,7 @@
 # AIGlass Applications
 
 JL 主控、V821 不显示模式下使用的 Linux 应用及 AGLink 通信库，包含 normal、拍照、录音、下载、OTA、录像和直播。
-常电 LVGL 模式使用独立的本地 MPP 后端，见[运行模式](../RUNTIME_MODES.md)。
+常电 LVGL 模式使用独立的本地 MPP 后端，见[运行模式](../../docs/architecture/runtime-modes.md)。
 V821 端消息与时序见[AGLink 协议](integration/AGLINK_PROTOCOL.md)。本仓库不包含 JL 端协议实现。
 
 ## 构建

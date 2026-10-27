@@ -23,6 +23,23 @@ without glasses application installation.
 
 Hardware validation covers the testboard and modules. Glasses hardware design files are available in [`Hardware/V821_ai_glasses`](Hardware/V821_ai_glasses/).
 
+## System Architecture
+
+<p align="center">
+  <a href="docs/images/SMART_AI_GLASSES_EN.png"><img src="docs/images/SMART_AI_GLASSES_EN.png" width="960" alt="V821 AI glasses system architecture: hardware, embedded platform, on-device features, and external services"></a>
+</p>
+
+[Vector diagram (SVG)](docs/images/SMART_AI_GLASSES_EN.svg) · [Architecture and development documentation (Chinese)](docs/README.md)
+
+## Host Integration Preview
+
+Native LVGL at `640 × 480` and the uni-app H5 companion share a browser preview through the Linux host bridge.
+Setup and operation are described in the [host integration guide](Application/host-debug/README.md).
+
+<p align="center">
+  <a href="docs/images/Simulate.png"><img src="docs/images/Simulate.png" width="960" alt="Linux host preview with the LVGL glasses interface on the left and the paired phone companion on the right"></a>
+</p>
+
 ## Repository Layout
 
 ### Hardware
@@ -63,7 +80,7 @@ It includes AI chat, translation, phone communication, recording, camera, files,
 using Linux interfaces and configurable HTTP services. The module plugs into an existing LVGL
 application. In the continuously powered UI mode, photo, video, and audio capture call V821 MPP
 directly through [`Application/mpp-media`](Application/mpp-media/README.md), with configurable local
-audio devices and channels. This path does not require AGLink. See [runtime modes](Application/RUNTIME_MODES.md)
+audio devices and channels. This path does not require AGLink. See [runtime modes](docs/architecture/runtime-modes.md)
 for ownership, startup, and protocol boundaries. The host application supplies LVGL, and the module has a
 separate build entry from the seven controller-driven applications. Development validation uses native
 Linux host builds and integration tests; operation on the V821 target device is unverified.
@@ -76,7 +93,7 @@ with the running process through an HTTP bridge. The phone displays an offline s
 [`Application/host-debug`](Application/host-debug/README.md) provides Linux host integration with a shared preview
 port for the actual LVGL display and phone UI. Builds, dependencies, logs, and test data stay in the workspace.
 Host mode excludes camera, microphone, backlight, real network provisioning, and JL access; AI services require
-separate configuration. See the [host simulator architecture (Chinese)](Application/host-debug/ARCHITECTURE.md)
+separate configuration. See the [host simulator architecture (Chinese)](docs/architecture/host-simulator.md)
 for source reuse, process and thread design, interfaces, pairing, storage, and testing boundaries.
 
 The `Application/Makefile` provides a common build entry for V821 applications. A complete Tina V821 BSP, cross toolchain, and built dependencies are required; `SDK/TinaLinux 5.0` in this repository contains patches only. The phone project uses separate npm commands.
@@ -93,6 +110,11 @@ See the [application guide](Application/aiglass-apps/README.md) for dependency p
 ### SDK/TinaLinux 5.0
 
 Contains SDK patches and board-level configuration for `v821-aiglass`.
+
+### docs
+
+[Project documentation (Chinese)](docs/README.md) contains system architecture, runtime modes, diagrams, and screenshots,
+with links to module development guides and protocol references.
 
 ## How to Use the Patches
 

@@ -27,7 +27,7 @@ VS Code Remote SSH 转发 **8787**，打开 `http://localhost:8787/debug/`，左
 显示离线并保留绑定。配对流程仅完成应用授权，不包含 Wi-Fi 配网、蓝牙发现或 JL 通信。
 
 完整构建、运行目录与调试说明见 [host-debug](../host-debug/README.md)，配对、协议、传输和
-存储设计见 [模拟器架构](../host-debug/ARCHITECTURE.md)。只修改手机界面时，
+存储设计见 [模拟器架构](../../docs/architecture/host-simulator.md)。只修改手机界面时，
 可在主机服务运行期间执行：
 
 ```bash

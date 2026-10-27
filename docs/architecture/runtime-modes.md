@@ -5,7 +5,7 @@ V821 设备支持两种互斥的运行模式，由启动服务选择角色。切
 
 Linux 主机模拟器是常电 UI 模式的开发环境，复用界面和业务服务，以软件显示和输入进行联调。
 它不启动 V821 固件、MPP 或受控应用，不构成第三种设备部署模式。设计见
-[Linux 主机模拟器架构](host-debug/ARCHITECTURE.md)，使用方法见 [主机联调说明](host-debug/README.md)。
+[Linux 主机模拟器架构](host-simulator.md)，使用方法见 [主机联调说明](../../Application/host-debug/README.md)。
 
 | 项目 | 常电 UI 模式 | JL 主控受控模式 |
 | --- | --- | --- |
@@ -35,7 +35,7 @@ MPP SYS 在首次媒体操作时初始化并保留到服务关闭。摄像头和
 界面常驻，不表示摄像头、麦克风一直采集。若显示宿主已经通过 MPP VO 管理 SYS，设置
 `manage_system=false`，并由宿主在媒体服务前初始化 SYS、在媒体服务之后退出 SYS。
 
-接口与配置见 [本地 MPP 后端](mpp-media/README.md)。相机页提供控制和状态，不含实时
+接口与配置见 [本地 MPP 后端](../../Application/mpp-media/README.md)。相机页提供控制和状态，不含实时
 取景；音频播放与输出音量控制未接入。媒体与 HTTP 共用服务控制线程，长任务会影响
 控制响应；MPP 数据处理和 WAV 采集在内部线程中进行。
 
@@ -95,4 +95,4 @@ LVGL 服务和七个独立应用入口共同持有 `/tmp/v821-mode-owner.lock`�
 - Linux 主机有独立的原生构建和集成测试入口，覆盖共用 UI、配对、文件及 HTTP 服务；
   主机结果不能替代上述目标端验证。
 
-受控命令、方向、载荷及完成时序见 [AGLink 协议说明](aiglass-apps/integration/AGLINK_PROTOCOL.md)。
+受控命令、方向、载荷及完成时序见 [AGLink 协议说明](../../Application/aiglass-apps/integration/AGLINK_PROTOCOL.md)。
