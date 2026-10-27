@@ -16,7 +16,7 @@
 `AIGLASS_BSP_ROOT` 指向完整的 Tina V821 BSP。
 
 `make bsp-prepare` 会构建上述依赖，但不会构建 BSP 内的 `demo_ai_glass`。
-如果 BSP 已经具备这些产物，可以完全跳过该目标，直接 `make doctor` 后编译。
+BSP 已具备上述产物时，执行 `make doctor` 检查后即可编译。
 
 `scripts/bsp-package.sh` 的依赖包含 wirelesscommon、wifimanager、libawion、
 libcedarc、person_detection、motion_detection、RT Media、Eyesee MPP 和 RTSP，
@@ -46,15 +46,17 @@ test -f "$AIGLASS_BSP_ROOT/build/envsetup.sh" && \
 不需要另外新增一套同名 OpenWrt 包。
 
 两种方式的构建入口各自独立：仅修改本目录的源码不会自动更新 BSP 中已复制的
-副本。当前仓库不包含完整 BSP 的原生包规则，因此原生包编译和整机功能还需要在
+副本。仓库不包含完整 BSP 的原生包规则，原生包编译和整机功能需要在
 完整 BSP 与目标板上验证。
 
 ## 运行时依赖
 
-二进制 `make package` 只装入本补丁包生成的 `ai_glass_*`、`libaglink.so` 和
-两个媒体初始化脚本。其他运行库继续由 BSP 固件/OpenWrt 包提供。
+受控模式可选 `media` 开发库沿用 video 的 RT Media、MPP 与 AGLink 依赖。
+该目标不构建界面程序，接口与链接方法见 [受控媒体接口](CONTROLLED_MEDIA.md)。
 
-当前 BSP 的 `wirelesscommon`、`wifimanager` 等依赖主要以 `.so` 形式提供，
-因此这里的“无链接”是指发布内容中没有指向当前 BSP 源码树的目录软链接，
-并不表示所有 ELF 都做全静态链接。若要做全静态 ELF，需要 BSP 另外提供每个
-依赖及其传递依赖的静态库，并重新核对许可证和链接顺序。
+二进制 `make package` 打包本工程生成的 `ai_glass_*`、`libaglink.so`，以及
+`log_handle.sh`、`rtc_init.sh`、`v821-mode.sh`。其他运行库由 BSP 固件/OpenWrt 包提供。
+
+BSP 的 `wirelesscommon`、`wifimanager` 等依赖主要以 `.so` 形式提供。
+源码发布包禁止目录软链接；ELF 的动态链接依赖由目标固件提供。
+全静态链接需要 BSP 提供每个依赖及其传递依赖的静态库，并重新核对许可证和链接顺序。

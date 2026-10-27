@@ -1,6 +1,8 @@
 # AIGlass Applications
 
-V821 Linux 应用及 AGLink 通信库，包含 normal、拍照、录音、下载、OTA、录像和直播。
+JL 主控、V821 不显示模式下使用的 Linux 应用及 AGLink 通信库，包含 normal、拍照、录音、下载、OTA、录像和直播。
+常电 LVGL 模式使用独立的本地 MPP 后端，见[运行模式](../RUNTIME_MODES.md)。
+V821 端消息与时序见[AGLink 协议](integration/AGLINK_PROTOCOL.md)。本仓库不包含 JL 端协议实现。
 
 ## 构建
 
@@ -19,6 +21,10 @@ make -C Application package
 
 单独编译应用时，将 `all` 替换为 `normal`、`photo`、`audio`、`download`、`ota`、
 `video` 或 `livestream`。
+
+`media` 目标生成可选的受控媒体 C 接口 `libaiglass_media.a`，供自定义受控宿主使用。
+接口与控制端边界见[受控媒体接口](integration/CONTROLLED_MEDIA.md)。`all` 同时生成该开发库；
+常电 LVGL 使用独立的 `Application/mpp-media`，不链接此库。
 
 首次准备 BSP 依赖使用 `make -C Application bsp-prepare`。该目标会执行 `lunch`
 并更新 BSP 配置；已选择对应板型时使用 `make -C Application bsp-deps`。
@@ -48,10 +54,13 @@ make -C Application package
 | --- | --- |
 | `build/` | 编译副本、开发头文件和库 |
 | `output/rootfs/` | `bin/ai_glass_*`、`lib/libaglink.so`、`etc/media/*.sh` |
+| `output/dev/` | `ag_media.h`、`libaiglass_media.a` 和 BSP 链接参数，供受控模式自定义宿主使用 |
 | `output/aiglass-apps-v821-<board>.tar.gz` | rootfs overlay |
 | `dist/aiglass-apps-<version>.tar.gz` | 源码发布包及配套 SHA-256 文件 |
 
 rootfs overlay 的无线、MPP 和 RT Media 运行库由 BSP 提供。
+`etc/media/v821-mode.sh` 提供角色/应用选择入口；固件启动服务须显式传入角色与已解析的模式，
+板级启动服务和 JL 端协议由对应固件集成。
 
 ## 安装与发布
 

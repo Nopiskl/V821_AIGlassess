@@ -29,6 +29,7 @@
 * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 * OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#include "../../src/misc/media_owner.h"
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -71,6 +72,14 @@ extern void aglink_audio_app_deinit(int dev_id);
 static int dev_id;
 int main(int argc, char *argv[])
 {
+    /* The descriptor remains owned by this process until exit. */
+    int mode_owner_fd = v821_mode_owner_acquire();
+    int media_owner_fd = mode_owner_fd < 0 ? -1 : v821_media_owner_acquire();
+    if (media_owner_fd < 0) {
+        perror("V821 media is already owned or unavailable");
+        return 1;
+    }
+
 
 	struct sigaction act;
 	act.sa_handler = signal_handler;

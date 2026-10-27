@@ -1,0 +1,69 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/index",
+      "style": {
+        "navigationBarTitleText": "主页面"
+      }
+    },
+    {
+      "path": "pages/features/index",
+      "style": {
+        "navigationBarTitleText": "功能"
+      }
+    },
+    {
+      "path": "pages/store/index",
+      "style": {
+        "navigationBarTitleText": "商店"
+      }
+    },
+    {
+      "path": "pages/me/index",
+      "style": {
+        "navigationBarTitleText": "我的"
+      }
+    },
+    {
+      "path": "pages/setup/index",
+      "style": {
+        "navigationBarTitleText": "连接眼镜"
+      }
+    },
+    {
+      "path": "pages/files/index",
+      "style": {
+        "navigationBarTitleText": "文件管理"
+      }
+    },
+    {
+      "path": "pages/transfers/index",
+      "style": {
+        "navigationBarTitleText": "文件传输"
+      }
+    },
+    {
+      "path": "pages/control/index",
+      "style": {
+        "navigationBarTitleText": "眼镜遥控"
+      }
+    },
+    {
+      "path": "pages/compose/index",
+      "style": {
+        "navigationBarTitleText": "内容同步"
+      }
+    },
+    {
+      "path": "pages/device/index",
+      "style": {
+        "navigationBarTitleText": "设备信息"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationStyle": "custom",
+    "backgroundColor": "#f4f6fa",
+    "navigationBarTextStyle": "black"
+  }
+}

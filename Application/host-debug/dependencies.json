@@ -1,0 +1,18 @@
+[
+  {
+    "url": "https://codeload.github.com/lvgl/lvgl/tar.gz/refs/tags/v8.3.11",
+    "archive": "lvgl-v8.3.11.tar.gz",
+    "root": "lvgl-8.3.11",
+    "destination": "deps/lvgl",
+    "marker": "lvgl.h",
+    "sha256": "83b7325a4b78cbb19a39f3ac75346c8086926d7faeab5ff2d825c20da0bbdb46"
+  },
+  {
+    "url": "https://codeload.github.com/curl/curl/tar.gz/refs/tags/curl-8_10_1",
+    "archive": "curl-8.10.1.tar.gz",
+    "root": "curl-curl-8_10_1/include",
+    "destination": "deps/curl-include",
+    "marker": "curl/curl.h",
+    "sha256": "5aaf131294f734756325dd99d849518c9a5060fc702517ab3064c76257dc700c"
+  }
+]

@@ -142,7 +142,7 @@ doctor_component() {
 			require_path "${AIGLASS_BSP_STAGING}/usr/include/wifimg.h" "Wi-Fi Manager 头文件"
 			require_glob "${AIGLASS_BSP_STAGING}/lib/libwifimg-v2.0.so*" "Wi-Fi Manager 库"
 			;;
-		video)
+		video|media)
 			require_path "${AIGLASS_BSP_STAGING}/usr/include/rt_media/AW_VideoInput_API.h" "RT Media 头文件"
 			require_glob "${AIGLASS_BSP_STAGING}/usr/lib/rt_media/librt_media.*" "RT Media 库"
 			require_path "${AIGLASS_BSP_STAGING}/usr/include/eyesee-mpp/middleware/config/mpp_config.mk" "MPP 配置"
@@ -187,6 +187,7 @@ sync_source() {
 		rsync -a --delete \
 			--exclude='*.o' --exclude='*.o.d' --exclude='*.d' \
 			--exclude='libaglink.so' --exclude='ai_glass_*' \
+			--exclude='libaiglass_media.a' --exclude='aiglass-media.ldflags' \
 			"${AIGLASS_SOURCE_DIR}/" "${AIGLASS_WORK_SOURCE}/"
 	else
 		warn "未找到 rsync，使用 cp 增量同步；源码中已经删除的文件需 make clean 后再编译"
@@ -206,6 +207,7 @@ prepare_output() {
 	mkdir -p -- "${AIGLASS_ROOTFS}/bin" "${AIGLASS_ROOTFS}/lib" "${AIGLASS_ROOTFS}/etc/media"
 	cp -a -- "${AIGLASS_WORK_SOURCE}/files/log_handle.sh" "${AIGLASS_ROOTFS}/etc/media/"
 	cp -a -- "${AIGLASS_WORK_SOURCE}/files/rtc_init.sh" "${AIGLASS_ROOTFS}/etc/media/"
+	install -m 0755 "${AIGLASS_WORK_SOURCE}/files/v821-mode.sh" "${AIGLASS_ROOTFS}/etc/media/"
 }
 
 run_component_make() {
@@ -244,6 +246,15 @@ build_application() {
 	install -m 0755 "${AIGLASS_WORK_SOURCE}/app/${aiglass_component}/${aiglass_binary}" "${AIGLASS_ROOTFS}/bin/${aiglass_binary}"
 }
 
+build_media_library() {
+	info "生成受控模式媒体开发库"
+	run_component_make "${AIGLASS_WORK_SOURCE}/app/video" media-library
+	mkdir -p -- "${AIGLASS_OUTPUT_DIR}/dev/include" "${AIGLASS_OUTPUT_DIR}/dev/lib"
+	install -m 0644 "${AIGLASS_WORK_SOURCE}/src/media/ag_media.h" "${AIGLASS_OUTPUT_DIR}/dev/include/"
+	install -m 0644 "${AIGLASS_WORK_SOURCE}/app/video/libaiglass_media.a" "${AIGLASS_OUTPUT_DIR}/dev/lib/"
+	install -m 0644 "${AIGLASS_WORK_SOURCE}/app/video/aiglass-media.ldflags" "${AIGLASS_OUTPUT_DIR}/dev/lib/"
+}
+
 strip_outputs() {
 	local aiglass_file
 	if [[ "${AIGLASS_STRIP_OUTPUT:-1}" != "1" ]]; then
@@ -269,6 +280,9 @@ build_target() {
 		for aiglass_component in "${AIGLASS_ALL_COMPONENTS[@]}"; do
 			build_application "${aiglass_component}"
 		done
+		build_media_library
+	elif [[ "${aiglass_target}" == "media" ]]; then
+		build_media_library
 	else
 		build_application "${aiglass_target}"
 	fi
@@ -321,6 +335,7 @@ EOF
 print_list() {
 	cat <<'EOF'
 lib         libaglink.so（公共通信、日志、网络封装）
+media       libaiglass_media.a（受控模式可选开发接口，依赖 RT Media/MPP/AGLink）
 normal      ai_glass_normal
 photo       ai_glass_photo
 audio       ai_glass_audio

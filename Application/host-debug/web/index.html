@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>V821 · LVGL 联调</title>
+    <link rel="stylesheet" href="/debug/style.css" />
+    <script src="/debug/app.js" defer></script>
+  </head>
+  <body>
+    <header>
+      <div>
+        <span class="eyebrow">V821 / DEVELOPMENT</span>
+        <h1>眼镜与手机联调</h1>
+      </div>
+      <p>640 × 480 横屏 · 同一套 LVGL 页面与业务代码</p>
+    </header>
+    <main>
+      <section class="panel glasses">
+        <div class="panel-heading">
+          <h2 id="resolution">LVGL · 640 × 480</h2>
+          <span id="connection">连接中</span>
+        </div>
+        <div class="display">
+          <img id="screen" alt="LVGL 实时画面" tabindex="0" width="640" height="480" />
+        </div>
+        <section class="phone-message" aria-label="手机消息" aria-live="polite">
+          <div class="message-heading">
+            <h3>手机消息</h3>
+            <span id="message-state">等待发送</span>
+          </div>
+          <p id="phone-message">配对后，在手机端“功能 → 消息投送”发送文字。</p>
+        </section>
+        <div class="controls">
+          <div class="control-heading">
+            <label for="pages">页面</label
+            ><select id="pages"></select>
+          </div>
+          <div class="keys" aria-label="LVGL 按键">
+            <button data-key="Escape">返回</button><button data-key="ArrowLeft">←</button>
+            <button data-key="ArrowUp">↑</button><button data-key="ArrowDown">↓</button>
+            <button data-key="ArrowRight">→</button><button data-key="Enter">确认</button
+            ><button data-key="Tab">下一项</button>
+          </div>
+          <label for="input">文字输入辅助</label>
+          <textarea id="input" placeholder="先打开 LVGL 编辑框，再填入文字"></textarea>
+          <div class="control-footer">
+            <button id="edit">填入编辑框</button>
+            <p id="status">可点击画面，或使用方向键、Enter、Esc、Tab。</p>
+          </div>
+        </div>
+        <p class="footnote">主机使用软件显示。相机、麦克风与背光操作不可用。</p>
+      </section>
+      <section class="panel phone">
+        <div class="panel-heading">
+          <h2>手机伴侣</h2>
+          <a href="/" target="_blank" rel="noopener">单独打开 ↗</a>
+        </div>
+        <iframe src="/" title="手机伴侣"></iframe>
+        <p class="footnote">首次连接：查找设备，输入左侧 LVGL 显示的六位配对码。</p>
+      </section>
+    </main>
+  </body>
+</html>

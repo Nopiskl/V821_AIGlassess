@@ -5,7 +5,7 @@
 #include "sun300iw1p1.dtsi"
 
 /{
-	board = "V821", "V821-Avaota F1";
+	board = "V821", "V821-AI glass";
 	compatible = "allwinner,v821", "riscv,sun300iw1p1";
 	aliases {
 	};

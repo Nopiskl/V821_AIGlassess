@@ -46,6 +46,10 @@
 #include <sys/types.h>
 #include <sys/prctl.h>
 #include <sys/time.h>
+#include <stdbool.h>
+#include <stdatomic.h>
+#include <sys/stat.h>
+#include "../../src/media/ag_media_video.h"
 
 #include <linux/videodev2.h>
 #include <media/sunxi_camera_v2.h>
@@ -76,7 +80,7 @@
 
 
 #define MAX_FILE_PATH_SIZE  (128)
-#define MAX_DIR_PATH_SIZE  (256)
+#define MAX_DIR_PATH_SIZE  (512)
 #define TAKE_VIDEO_PATCH "/mnt/UDISK/"
 #define TAKE_VIDEO_DIR_PATCH "video-"
 #define TAKE_VIDEO_TXT_FILE "/mnt/UDISK/media.config"
@@ -155,6 +159,8 @@ typedef struct DemoAvAIGlassContext
 	uint64_t pre_pts; //record previous video frame pts. unit:us
 	int pre_pts_in_seconds; //record last video frame pts diff in seconds.
 	int cb_stream_cnt_in_seconds; //the stream count between two seconds.
+	bool sys_ready, rt_ready, input_ready, aenc_ready, aenc_started, mux_ready, dispatch_started;
+	atomic_bool stop_requested, dispatch_stop;
 } DemoAvAIGlassContext;
 
 typedef enum video_mode_state {
@@ -179,7 +185,12 @@ volatile int video_app_exit;
 
 volatile video_mode_state video_state = AG_VEDIA_CH_NEW;
 
-static int error_code = AG_SUCCESS;
+static atomic_int error_code = AG_SUCCESS;
+/* The optional resident API owns capture explicitly. Standalone fastboot applications retain their
+ * original completion/power policy and default output paths. */
+static bool api_managed;
+static char api_output_path[MAX_DIR_PATH_SIZE];
+static pthread_mutex_t context_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static int nFrameFd = -1;
 
@@ -263,6 +274,11 @@ static void* aglink_video_task(void* data)
 				STATE_CHANGED(AG_VEDIA_CH_FAILED);
 				break;
 			}
+			if (video_app_exit) {
+				video_exit();
+				(void)aglink_take_video();
+				break;
+			}
 			aglink_video_app_start();
 			STATE_CHANGED(AG_VEDIA_START);
 			break;
@@ -271,7 +287,7 @@ static void* aglink_video_task(void* data)
 		case AG_VEDIA_CH_CONNECTION:
 		case AG_VEDIA_START:{
 			struct ag_time *ag_mode_info = aglink_get_mode(video_dev_id);
-			if (ag_mode_info->width && ag_mode_info->height)
+			if (ag_mode_info && ag_mode_info->width && ag_mode_info->height)
 				AiGlassThumb = aglink_take_thumb(ag_mode_info->width, ag_mode_info->height);
 			else
 				AGLINK_INFO("width&height is null, no need thumb\n");
@@ -280,6 +296,7 @@ static void* aglink_video_task(void* data)
 				if (AiGlassThumb != NULL) {
 					free(AiGlassThumb->pJpegBuf);
 					free(AiGlassThumb);
+					AiGlassThumb = NULL;
 				}
 				STATE_CHANGED(AG_VEDIA_CH_FAILED);
 				break;
@@ -288,7 +305,9 @@ static void* aglink_video_task(void* data)
 		}break;
 		case AG_VEDIA_AUDIO_IN:
 		case AG_VEDIA_STOP:
-			STATE_CHANGED(AG_VEDIA_END);
+			if (gpDemoAvAIGlassContext) (void)aglink_take_video();
+			if (error_code == AG_SUCCESS) { STATE_CHANGED(AG_VEDIA_END); }
+			else { STATE_CHANGED(AG_VEDIA_CH_FAILED); }
 			break;
 		case AG_VEDIA_END:
 			aglink_take_gyro("NULL", strlen("NULL"));
@@ -296,8 +315,9 @@ static void* aglink_video_task(void* data)
 			//	aglink_gyro_license_encrypt(time_buf);
 			aglink_video_app_send_thumb(AiGlassThumb);
 			if (AiGlassThumb != NULL) {
-					free(AiGlassThumb->pJpegBuf);
-					free(AiGlassThumb);
+				free(AiGlassThumb->pJpegBuf);
+				free(AiGlassThumb);
+				AiGlassThumb = NULL;
 			}
 			STATE_CHANGED(AG_VEDIA_CH_IDLE);
 			break;
@@ -312,7 +332,8 @@ static void* aglink_video_task(void* data)
 		}
 		usleep(10 * 1000);
 	}
-	AGLINK_INFO("aglink photo task exit\n");
+	if (AiGlassThumb) { free(AiGlassThumb->pJpegBuf); free(AiGlassThumb); }
+	AGLINK_INFO("aglink video task exit\n");
 	pthread_exit(NULL);
 }
 
@@ -323,11 +344,12 @@ static int aglink_video_app_rxcb(uint8_t type, uint8_t *data, int len)
 	switch (type) {
 	case AG_AD_AP:
 	case AG_AD_STA:
+		break;
 	case AG_AD_AUDIO:
 		if (video_state == AG_VEDIA_CH_CONNECTING) {
 			STATE_CHANGED(AG_VEDIA_START);
 		}
-		if ((video_state == AG_VEDIA_START) && (len > 0)) {
+		if ((video_state == AG_VEDIA_START) && data && (len > 0)) {
 			sendPcmData(data, len);
 		}
 		break;
@@ -336,6 +358,12 @@ static int aglink_video_app_rxcb(uint8_t type, uint8_t *data, int len)
 	case AG_AD_VIDEO_STOP:
 		video_exit();
 		STATE_CHANGED(AG_VEDIA_STOP);
+		break;
+	case AG_AD_DIS_LINE:
+		error_code = AG_NETWORK_DISCONNECT;
+		video_exit();
+		STATE_CHANGED(AG_VEDIA_STOP);
+		break;
 	default:
 		break;
 	}
@@ -403,15 +431,16 @@ void aglink_video_app_init(int dev_id)
 		return ;
 #endif
 
-	pthread_create(&ag_video_thread, NULL, aglink_video_task, NULL);
-
 	video_app_exit = 0;
+	pthread_create(&ag_video_thread, NULL, aglink_video_task, NULL);
 }
 
 void aglink_video_app_deinit(int dev_id)
 {
 	video_app_exit = 1;
+	video_exit(); /* Wake the recorder before joining its control thread. */
 	pthread_join(ag_video_thread, NULL);
+	if (gpDemoAvAIGlassContext) (void)aglink_take_video();
 	aglink_channel_delete(video_dev_id);
 }
 
@@ -439,9 +468,12 @@ static void get_timestamp_string(char *buf, size_t len)
 static DemoAvAIGlassContext *gpDemoAvAIGlassContext = NULL;
 static void video_exit(void)
 {
+    pthread_mutex_lock(&context_lock);
     if(gpDemoAvAIGlassContext != NULL) {
+        atomic_store(&gpDemoAvAIGlassContext->stop_requested, true);
         cdx_sem_up(&gpDemoAvAIGlassContext->finish_sem);
     }
+    pthread_mutex_unlock(&context_lock);
 }
 
 /**
@@ -514,10 +546,8 @@ static ERRORTYPE MPPCallbackWrapper(void *cookie, MPP_CHN_S *pChn, MPP_EVENT_TYP
 			case MPP_EVENT_WRITE_DISK_ERROR: {
 				int nMuxChn = *(int*)pEventData;
 				AGLINK_ERROR("muxChn[%d] write disk error [%s]!\n", nMuxChn, strerror(errno));
-				if (errno == ENOSPC) {
-					error_code = AG_FAILED_DISK_FULL;
-					video_exit();
-				}
+				error_code = errno == ENOSPC ? AG_FAILED_DISK_FULL : AG_FAILED_WRITE_FILE;
+				video_exit();
 				break;
 			}
 			default: {
@@ -587,10 +617,13 @@ static int CreateMuxChn(DemoAvAIGlassContext *pContext)
 	char frameFilePath[MAX_DIR_PATH_SIZE];
 
 	get_timestamp_string(time_buf, sizeof(time_buf));
-	if (access(VIDEO_SUBDIR_NAME_POINT, F_OK) == 0)
+	gyro_en = 0;
+	if (!api_managed && access(VIDEO_SUBDIR_NAME_POINT, F_OK) == 0)
 		gyro_en = 1;
 	snprintf(pContext->stConfig.strVideoFile, sizeof(pContext->stConfig.strVideoFile) - 1, "%s.mp4",time_buf);
-	if (gyro_en) {
+	if (api_managed) {
+		snprintf(pContext->stConfig.strVideoFilePath, sizeof(pContext->stConfig.strVideoFilePath), "%s", api_output_path);
+	} else if (gyro_en) {
 		snprintf(pContext->stConfig.strVideoSubDirName, sizeof(pContext->stConfig.strVideoSubDirName) - 1, "%s%s",
 				TAKE_VIDEO_DIR_PATCH, time_buf);
 		snprintf(strVideoSubDirPath, sizeof(strVideoSubDirPath) - 1, "%s%s%s/",
@@ -613,13 +646,15 @@ static int CreateMuxChn(DemoAvAIGlassContext *pContext)
 		}
 	}
 
-	int nMediaFd = open(pFilePath, O_RDWR | O_CREAT | O_TRUNC | O_NOATIME, 0666);
+	int nMediaFd = open(pFilePath, O_RDWR | O_CREAT | O_CLOEXEC | O_NOFOLLOW |
+		(api_managed ? O_EXCL : O_TRUNC), api_managed ? 0600 : 0666);
 	AGLINK_INFO("%s\n", pFilePath);
 	if (nMediaFd < 0) {
 		AGLINK_ERROR("fatal error! failed to open %s\n", pFilePath);
+		return -errno;
 	}
 
-	if (aglink_take_gyro(time_buf, strlen(time_buf)) == 0) {
+	if (!api_managed && aglink_take_gyro(time_buf, strlen(time_buf)) == 0) {
 		snprintf(frameFilePath, sizeof(frameFilePath) - 1, "%s%s%s/%s%s.txt",
 					TAKE_VIDEO_PATCH, TAKE_VIDEO_DIR_PATCH, time_buf, TAKE_FRAME_NAME_HEAD, time_buf);
 		nFrameFd = open(frameFilePath, O_RDWR | O_CREAT| O_SYNC | O_TRUNC, 0666);
@@ -659,25 +694,28 @@ static int CreateMuxChn(DemoAvAIGlassContext *pContext)
 	pContext->stMuxChnAttr.mAddRepairInfo = 0;
 	pContext->stMuxChnAttr.mMaxFrmsTagInterval = 0;
 	ret = AW_MPI_MUX_CreateChn(pContext->nMuxChn, &pContext->stMuxChnAttr, nMediaFd, 0);
-	if(ret != SUCCESS) {
-		AGLINK_ERROR("fatal error! create muxChn[%d] fail ret[0x%x]!\n", pContext->nMuxChn, ret);
-	}
 	close(nMediaFd);
 	nMediaFd = -1;
+	if(ret != SUCCESS) {
+		AGLINK_ERROR("fatal error! create muxChn[%d] fail ret[0x%x]!\n", pContext->nMuxChn, ret);
+		return -EIO;
+	}
+	pContext->mux_ready = true;
 	pContext->ePolicy = RecordFileDurationPolicy_MinDuration;
 	ret = AW_MPI_MUX_SetSwitchFileDurationPolicy(pContext->nMuxChn, pContext->ePolicy);
 	if(ret != SUCCESS) {
 		AGLINK_ERROR("fatal error! set file duration policy[%d] to muxChn[%d] fail!\n", pContext->ePolicy, pContext->nMuxChn);
+		return -EIO;
 	}
 	ret = AW_MPI_MUX_SetVeChnBindStreamId(pContext->nMuxChn, pContext->AWVideoInputChnConfig.channelId, pContext->nMuxVideoStreamId);
 	if(ret != SUCCESS) {
 		AGLINK_ERROR("fatal error! set VeChnBindStreamId to muxChn[%d] fail!\n", pContext->nMuxChn);
+		return -EIO;
 	}
 	MPPCallbackInfo cbInfo;
 	cbInfo.cookie = (void*)pContext;
 	cbInfo.callback = (MPPCallbackFuncType)&MPPCallbackWrapper;
-	AW_MPI_MUX_RegisterCallback(pContext->nMuxChn, &cbInfo);
-	return 0;
+	return AW_MPI_MUX_RegisterCallback(pContext->nMuxChn, &cbInfo) == SUCCESS ? 0 : -EIO;
 }
 
 static int SetSpsppsToMuxer(DemoAvAIGlassContext *pContext)
@@ -693,9 +731,10 @@ static int SetSpsppsToMuxer(DemoAvAIGlassContext *pContext)
 			stH264SpsPpsInfo.nLength = stSpsPpsInfo.size;
 			AGLINK_INFO("AWVideoInputChn[%d]: H264SpsPpsInfo.nLength: %d\n", pContext->AWVideoInputChnConfig.channelId,
 				stH264SpsPpsInfo.nLength);
-			AW_MPI_MUX_SetH264SpsPpsInfo(pContext->nMuxChn, pContext->AWVideoInputChnConfig.channelId, &stH264SpsPpsInfo);
+			return AW_MPI_MUX_SetH264SpsPpsInfo(pContext->nMuxChn, pContext->AWVideoInputChnConfig.channelId, &stH264SpsPpsInfo) == SUCCESS ? 0 : -EIO;
 		} else {
 			AGLINK_ERROR("fatal error! get spspps from rtmedia channel[%d] fail\n", pContext->AWVideoInputChnConfig.channelId);
+			return -EIO;
 		}
 	} else if (RT_VENC_CODEC_H265 == pContext->AWVideoInputChnConfig.encodeType) {
 		sps_pps_data_info stSpsPpsInfo;
@@ -707,12 +746,26 @@ static int SetSpsppsToMuxer(DemoAvAIGlassContext *pContext)
 			stH265SpsPpsInfo.nLength = stSpsPpsInfo.size;
 			AGLINK_INFO("AWVideoInputChn[%d]: H265SpsPpsInfo.nLength: %d\n", pContext->AWVideoInputChnConfig.channelId,
 				stH265SpsPpsInfo.nLength);
-			AW_MPI_MUX_SetH265SpsPpsInfo(pContext->nMuxChn, pContext->AWVideoInputChnConfig.channelId, &stH265SpsPpsInfo);
+			return AW_MPI_MUX_SetH265SpsPpsInfo(pContext->nMuxChn, pContext->AWVideoInputChnConfig.channelId, &stH265SpsPpsInfo) == SUCCESS ? 0 : -EIO;
 		} else {
 			AGLINK_ERROR("fatal error! get spspps from AWVideoInputChn[%d] fail\n", pContext->AWVideoInputChnConfig.channelId);
+			return -EIO;
 		}
 	}
 	return 0;
+}
+
+static int start_mux(DemoAvAIGlassContext *context)
+{
+    int result = 0;
+    pthread_mutex_lock(&context->MuxChnLock);
+    if (!context->bMuxChnSetSpsppsFlag) {
+        result = SetSpsppsToMuxer(context);
+        if (!result && AW_MPI_MUX_StartChn(context->nMuxChn) != SUCCESS) result = -EIO;
+        if (!result) context->bMuxChnSetSpsppsFlag = 1;
+    }
+    pthread_mutex_unlock(&context->MuxChnLock);
+    return result;
 }
 
 static void video_stream_cb(const AWVideoInput_StreamInfo* stream_info)
@@ -721,13 +774,12 @@ static void video_stream_cb(const AWVideoInput_StreamInfo* stream_info)
 	static int frame_cnt;
 	char frame_txt[32];
 	DemoAvAIGlassContext *pContext = gpDemoAvAIGlassContext;
-	pthread_mutex_lock(&pContext->MuxChnLock);
-	if (0 == pContext->bMuxChnSetSpsppsFlag) {
-		SetSpsppsToMuxer(pContext);
-		pContext->bMuxChnSetSpsppsFlag = 1;
-		AW_MPI_MUX_StartChn(pContext->nMuxChn);
+	if (!pContext || !stream_info || atomic_load(&pContext->stop_requested)) return;
+	if (start_mux(pContext) < 0) {
+		error_code = AG_FAILED_PROCESS;
+		video_exit();
+		return;
 	}
-	pthread_mutex_unlock(&pContext->MuxChnLock);
 
 	if (stream_info->data0 != NULL && stream_info->size0 > 0) {
 		uint64_t cur_time = get_cur_time_us();
@@ -765,6 +817,12 @@ static void video_stream_cb(const AWVideoInput_StreamInfo* stream_info)
 
 		VENC_STREAM_S stVencStream;
 		VENC_PACK_S stVencPack;
+		if (stream_info->nDataNum > sizeof(stVencPack.mPackInfo) / sizeof(stVencPack.mPackInfo[0]) ||
+			stream_info->nDataNum > sizeof(stream_info->stPackInfo) / sizeof(stream_info->stPackInfo[0])) {
+			error_code = AG_FAILED_PROCESS;
+			video_exit();
+			return;
+		}
 		memset(&stVencStream, 0, sizeof(stVencStream));
 		memset(&stVencPack, 0, sizeof(stVencPack));
 		stVencStream.mPackCount = 1;
@@ -806,6 +864,8 @@ static void video_stream_cb(const AWVideoInput_StreamInfo* stream_info)
 		ret = AW_MPI_MUX_SendVideoStreamSync(pContext->nMuxChn, &stVencStream, pContext->nMuxVideoStreamId);
 		if (ret != SUCCESS) {
 			AGLINK_ERROR("fatal error! send video stream to mux fail[0x%x]\n", ret);
+			error_code = AG_FAILED_WRITE_FILE;
+			video_exit();
 		}
 	} else {
 		AGLINK_ERROR("fatal error! stream data error: data = %p, len = %d, streamCount:%d\n", stream_info->data0, stream_info->size0,
@@ -824,12 +884,14 @@ static void video_stream_cb(const AWVideoInput_StreamInfo* stream_info)
 static void sendPcmData(uint8_t *data, int len)
 {
 	int ret;
+	pthread_mutex_lock(&context_lock);
 	DemoAvAIGlassContext *pContext = gpDemoAvAIGlassContext;
 
-	if (pContext == NULL) {
+	if (pContext == NULL || !pContext->aenc_started) {
+		pthread_mutex_unlock(&context_lock);
 		return;
 	}
-	AUDIO_FRAME_S frame;
+	AUDIO_FRAME_S frame = {0};
 
 	frame.mpAddr = data;
 	frame.mLen = len;
@@ -839,8 +901,12 @@ static void sendPcmData(uint8_t *data, int len)
 		ret = AW_MPI_AENC_SendFrame(pContext->nAEncChnId, &frame, NULL);
 	if (ret) {
 			AGLINK_ERROR("aenc send Frame error:%d\n", ret);
+			error_code = AG_FAILED_PROCESS;
+			atomic_store(&pContext->stop_requested, true);
+			cdx_sem_up(&pContext->finish_sem);
 		}
 	}
+	pthread_mutex_unlock(&context_lock);
 }
 
 static void* StreamDispatchThread(void *pThreadData)
@@ -853,10 +919,11 @@ static void* StreamDispatchThread(void *pThreadData)
 	prctl(PR_SET_NAME, (unsigned long)"StrmDispatch", 0, 0, 0);
 
 	int nAeChnFd = AW_MPI_AENC_GetHandle(pContext->nAEncChnId);
+	if (nAeChnFd < 0) { error_code = AG_FAILED_PROCESS; video_exit(); return NULL; }
 	int nMaxFd = nAeChnFd;
 	int nReadyCnt;
 
-	while(1) {
+	while (!atomic_load(&pContext->dispatch_stop)) {
 	PROCESS_MESSAGE:
 		if (get_message(&pContext->StreamDispatchCmdQueue, &stCmdMsg) == 0) {
 			alogv("StreamDispatch Thread receive command:%d", stCmdMsg.command);
@@ -881,6 +948,8 @@ static void* StreamDispatchThread(void *pThreadData)
 					ret = AW_MPI_MUX_SendAudioStreamSync(pContext->nMuxChn, &stAudioStream, pContext->nMuxAudioStreamId);
 					if(ret != SUCCESS) {
 						AGLINK_ERROR("fatal error! send audio stream to mux fail[0x%x]\n", ret);
+						error_code = AG_FAILED_WRITE_FILE;
+						video_exit();
 					}
 					ret = AW_MPI_AENC_ReleaseStream(pContext->nAEncChnId, &stAudioStream);
 					if(ret != SUCCESS) {
@@ -913,18 +982,28 @@ static DemoAvAIGlassContext *createDemoAvAIGlassContext()
 	result = pthread_mutex_init(&pContext->MuxChnLock, NULL);
 	if (result!=0) {
 		AGLINK_ERROR("fatal error! mutex init fail\n");
+		free(pContext);
+		return NULL;
 	}
 	result = message_create(&pContext->StreamDispatchCmdQueue);
 	if(result != 0) {
 		AGLINK_ERROR("fatal error! message create fail!\n");
+		pthread_mutex_destroy(&pContext->MuxChnLock);
+		free(pContext);
+		return NULL;
 	}
 	cdx_sem_init(&pContext->finish_sem, 0);
+	atomic_init(&pContext->stop_requested, false);
+	atomic_init(&pContext->dispatch_stop, false);
 	return pContext;
 }
 
 static void deleteDemoAvAIGlassContext(DemoAvAIGlassContext *pContext)
 {
 	int result;
+	pthread_mutex_lock(&context_lock);
+	if (gpDemoAvAIGlassContext == pContext) gpDemoAvAIGlassContext = NULL;
+	pthread_mutex_unlock(&context_lock);
 	cdx_sem_deinit(&pContext->finish_sem);
 	message_destroy(&pContext->StreamDispatchCmdQueue);
 	result = pthread_mutex_destroy(&pContext->MuxChnLock);
@@ -932,6 +1011,31 @@ static void deleteDemoAvAIGlassContext(DemoAvAIGlassContext *pContext)
 		AGLINK_ERROR("fatal error! mutex destroy fail\n");
 	}
 	free(pContext);
+}
+
+/* Unwind only initialized resources, including a partially initialized session. */
+static int release_video(DemoAvAIGlassContext *context)
+{
+    int result = 0;
+    pthread_mutex_lock(&context_lock);
+    bool audio_started = context->aenc_started;
+    context->aenc_started = false;
+    pthread_mutex_unlock(&context_lock);
+    if (context->input_ready && AWVideoInput_Destroy(context->nChnId) != 0) result = -EIO;
+    atomic_store(&context->dispatch_stop, true);
+    if (context->dispatch_started && pthread_join(context->StreamDispatchThreadId, NULL) != 0) result = -EIO;
+    if (audio_started && AW_MPI_AENC_StopRecvPcm(context->nAEncChnId) != SUCCESS) result = -EIO;
+    if (context->mux_ready) {
+        if (AW_MPI_MUX_StopChn(context->nMuxChn, FALSE) != SUCCESS) result = -EIO;
+        if (AW_MPI_MUX_DestroyChn(context->nMuxChn) != SUCCESS) result = -EIO;
+    }
+    if (context->aenc_ready && AW_MPI_AENC_DestroyChn(context->nAEncChnId) != SUCCESS) result = -EIO;
+    if (nFrameFd >= 0) { close(nFrameFd); nFrameFd = -1; }
+    if (context->rt_ready && AWVideoInput_DeInit() != 0) result = -EIO;
+    if (context->sys_ready && AW_MPI_SYS_Exit() != SUCCESS) result = -EIO;
+    deleteDemoAvAIGlassContext(context);
+    log_quit();
+    return result;
 }
 
 static int configVideoInputConfigByPresetConfig(VideoInputConfig *pAWVideoInputConfig, PresetRtMediaChnConfig *pPresetConfig)
@@ -991,6 +1095,7 @@ static void video_stream_cb_null(const AWVideoInput_StreamInfo* stream_info)
 
 int aglink_check_file(DemoAvAIGlassContext *pContext)
 {
+	if (api_managed) return 0; /* CreateMuxChn opens the requested output atomically. */
 	int ret = 0;
 	uint16_t get_channel_state_cnt = 0;
 	int result = 0;
@@ -1061,10 +1166,13 @@ int aglink_mpp_init(void)
 	AGLINK_INFO("aglink_take_video begin\n");
 
 	DemoAvAIGlassContext *pContext = createDemoAvAIGlassContext();
+	if (!pContext) { error_code = AG_FAILED_NOMEMORY; log_quit(); return -ENOMEM; }
 
 	pContext->nMuxVideoStreamId = 0;
 	pContext->nMuxAudioStreamId = 1;
+	pthread_mutex_lock(&context_lock);
 	gpDemoAvAIGlassContext = pContext;
+	pthread_mutex_unlock(&context_lock);
 
 	pContext->stConfig.eAudioEncodeType = PT_AAC;
 	pContext->stConfig.nAudioBitrate = 32000;
@@ -1074,14 +1182,18 @@ int aglink_mpp_init(void)
 	pContext->stream_count_0 = 0;
 
 	pContext->stSysConf.nAlignWidth = 32;
-	AW_MPI_SYS_SetConf(&pContext->stSysConf);
-	AW_MPI_SYS_Init();
+	if (AW_MPI_SYS_SetConf(&pContext->stSysConf) != SUCCESS || AW_MPI_SYS_Init() != SUCCESS) {
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
+	}
+	pContext->sys_ready = true;
 	result = AWVideoInput_Init();
 	if (result != 0) {
 		AGLINK_ERROR("fatal error! AWVideoInput init fail:%d\n", result);
 		error_code = AG_FAILED_PROCESS;
-		return result;
+		goto _exit;
 	}
+	pContext->rt_ready = true;
 	pContext->nChnId = 0;
 	result = AWVideoInput_GetPresetConfig(pContext->nChnId, &pContext->presetChnConfig);
 	if (result != 0) {
@@ -1109,6 +1221,7 @@ int aglink_mpp_init(void)
 		error_code = AG_FAILED_PROCESS;
 		goto _exit;
 	}
+	pContext->input_ready = true;
 	//prepare audio stream
 	MPPCallbackInfo cbInfo;
 	cbInfo.cookie = (void*)pContext;
@@ -1125,18 +1238,30 @@ int aglink_mpp_init(void)
 	ret = AW_MPI_AENC_CreateChn(pContext->nAEncChnId, &pContext->stAEncAttr);
 	if (ret != SUCCESS) {
 		AGLINK_ERROR("fatal error! create aenc chn fail\n");
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
 	}
-	AW_MPI_AENC_RegisterCallback(pContext->nAEncChnId, &cbInfo);
+	pContext->aenc_ready = true;
+	if (AW_MPI_AENC_RegisterCallback(pContext->nAEncChnId, &cbInfo) != SUCCESS) {
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
+	}
 	MPP_CHN_S stDstAEncChn = {MOD_ID_AENC, 0, pContext->nAEncChnId};
 	//prepare mux chn
-	if ((aglink_check_file(pContext) < 0) || (pContext->finish_sem.semval > 0)) {
+	if ((aglink_check_file(pContext) < 0) || atomic_load(&pContext->stop_requested)) {
 		error_code = AG_FAILED_WRITE_FILE;
 		goto _exit;
 	}
-	CreateMuxChn(pContext);
+	if (CreateMuxChn(pContext) < 0) {
+		error_code = AG_FAILED_WRITE_FILE;
+		goto _exit;
+	}
 
 	//start to record
-	AWVideoInput_CallBack(pContext->AWVideoInputChnConfig.channelId, video_stream_cb, 0);
+	if (AWVideoInput_CallBack(pContext->AWVideoInputChnConfig.channelId, video_stream_cb, 0) != 0) {
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
+	}
 	result = AWVideoInput_Start(pContext->AWVideoInputChnConfig.channelId, 1);
 	if (result != 0) {
 		alogw("fatal error! AWVideoInputChn[%d] start fail:%d", pContext->AWVideoInputChnConfig.channelId, result);
@@ -1152,119 +1277,161 @@ int aglink_mpp_init(void)
 		}
 	}
 
-	pthread_mutex_lock(&pContext->MuxChnLock);
-	if(0 == pContext->bMuxChnSetSpsppsFlag) {
-		SetSpsppsToMuxer(pContext);
-		pContext->bMuxChnSetSpsppsFlag = 1;
-		AW_MPI_MUX_StartChn(pContext->nMuxChn);
+	if (start_mux(pContext) < 0 || error_code != AG_SUCCESS) {
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
 	}
-	pthread_mutex_unlock(&pContext->MuxChnLock);
 
-	AW_MPI_AENC_StartRecvPcm(pContext->nAEncChnId);
+	if (AW_MPI_AENC_StartRecvPcm(pContext->nAEncChnId) != SUCCESS) {
+		error_code = AG_FAILED_PROCESS;
+		goto _exit;
+	}
+	pthread_mutex_lock(&context_lock);
+	pContext->aenc_started = true;
+	pthread_mutex_unlock(&context_lock);
 	result = pthread_create(&pContext->StreamDispatchThreadId, NULL, StreamDispatchThread, pContext);
 	if (result != 0) {
 		AGLINK_ERROR("fatal error! pthread create fail!\n");
 		error_code = AG_FAILED_PROCESS;
 		goto _exit;
 	}
-	return result;
+	pContext->dispatch_started = true;
+	return 0;
 
 _exit:
-	AWVideoInput_DeInit();
-	AW_MPI_SYS_Exit();
-	deleteDemoAvAIGlassContext(pContext);
+	(void)release_video(pContext);
 	AGLINK_INFO("ai_glass_take_video finish!\n");
-	log_quit();
-	return result;
+	return -EIO;
 }
 
 int aglink_take_video(void)
 {
-	DemoAvAIGlassContext *pContext = gpDemoAvAIGlassContext;
-	ERRORTYPE ret;
-	int result = 0;
-	int fd = -1;
-
-	if(gpDemoAvAIGlassContext == NULL) {
-        error_code = AG_FAILED_PROCESS;
-		return -1;
+    DemoAvAIGlassContext *context = gpDemoAvAIGlassContext;
+    char path[MAX_DIR_PATH_SIZE], entry[MAX_FILE_PATH_SIZE];
+    int result;
+    bool managed = api_managed;
+    if (!context) { error_code = AG_FAILED_PROCESS; return -ENODEV; }
+    if (context->stConfig.nTestDuration > 0)
+        cdx_sem_down_timedwait(&context->finish_sem, context->stConfig.nTestDuration * 1000);
+    else cdx_sem_down(&context->finish_sem);
+    snprintf(path, sizeof(path), "%s", context->stConfig.strVideoFilePath);
+    snprintf(entry, sizeof(entry), "%s", gyro_en ? context->stConfig.strVideoSubDirName : context->stConfig.strVideoFile);
+    result = release_video(context);
+    int fd = open(path, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+    struct stat st;
+    if (fd < 0) { if (!result) result = -errno; }
+    else {
+        if (fstat(fd, &st) < 0 || !S_ISREG(st.st_mode) || st.st_size <= 0) result = -EIO;
+        if (fsync(fd) < 0 && !result) result = -errno;
+        close(fd);
     }
-	if (pContext->stConfig.nTestDuration > 0) {
-		cdx_sem_down_timedwait(&pContext->finish_sem, pContext->stConfig.nTestDuration*1000);
-	} else {
-		cdx_sem_down(&pContext->finish_sem);
-	}
-	AGLINK_INFO("app will stop and exit now.\n");
-	//AWVideoInput_Start(pContext->config_0.channelId, 0);
-	result = AWVideoInput_Destroy(pContext->AWVideoInputChnConfig.channelId);
-	if (result != 0) {
-		AGLINK_ERROR("fatal error! AWVideoInputChn[%d] destroy fail:%d\n", pContext->AWVideoInputChnConfig.channelId, result);
-	}
+    if (!managed && !result) {
+        fd = open(TAKE_VIDEO_TXT_FILE, O_WRONLY | O_APPEND | O_SYNC | O_CREAT, 0644);
+        if (fd < 0) result = -errno;
+        else {
+            size_t length = strlen(entry);
+            if (write(fd, entry, length) != (ssize_t)length || write(fd, "\n", 1) != 1) result = -EIO;
+            close(fd);
+        }
+    }
+    if (result && error_code == AG_SUCCESS) error_code = AG_FAILED_WRITE_FILE;
+    return result;
+}
 
-	message_t stMsg;
-	InitMessage(&stMsg);
-	stMsg.command = DemoAvAIGlass_Stop;
-	put_message(&pContext->StreamDispatchCmdQueue, &stMsg);
-	int StreamDispatchResult;
-	result = pthread_join(pContext->StreamDispatchThreadId, (void**) &StreamDispatchResult);
-	if (result != 0) {
-		AGLINK_ERROR("fatal error! pthread join fail[%d]\n", result);
-	}
-	//stop
-	ret = AW_MPI_AENC_StopRecvPcm(pContext->nAEncChnId);
-	if (ret != SUCCESS) {
-		AGLINK_ERROR("fatal error! aenc stop chn fail[0x%x]\n", ret);
-	}
+int ag_media_video_start(const char *path)
+{
+    if (!path || !*path || strlen(path) >= sizeof(api_output_path)) return -EINVAL;
+    if (gpDemoAvAIGlassContext) return -EBUSY;
+    api_managed = true;
+    snprintf(api_output_path, sizeof(api_output_path), "%s", path);
+    error_code = AG_SUCCESS;
+    int result = aglink_mpp_init();
+    if (result) { api_managed = false; api_output_path[0] = '\0'; }
+    return result;
+}
 
-	ret = AW_MPI_MUX_StopChn(pContext->nMuxChn, FALSE);
-	if (ret != SUCCESS) {
-		AGLINK_ERROR("fatal error! muxChn stop fail[0x%x]\n", ret);
-	}
-	//destroy
-	ret = AW_MPI_MUX_DestroyChn(pContext->nMuxChn);
-	if (ret != SUCCESS) {
-		AGLINK_ERROR("fatal error! muxChn destroy fail[0x%x]\n", ret);
-	}
-	ret = AW_MPI_AENC_DestroyChn(pContext->nAEncChnId);
-	if (ret != SUCCESS) {
-		AGLINK_ERROR("fatal error! aenc destroy chn fail[0x%x]\n", ret);
-	}
+int ag_media_video_status(void)
+{
+    int result;
+    pthread_mutex_lock(&context_lock);
+    if (!gpDemoAvAIGlassContext) result = -ENODEV;
+    else if (error_code != AG_SUCCESS) result = -EIO;
+    else result = atomic_load(&gpDemoAvAIGlassContext->stop_requested) ? 1 : 0;
+    pthread_mutex_unlock(&context_lock);
+    return result;
+}
 
-	if (access(pContext->stConfig.strVideoFilePath, F_OK) != -1) {
-		fd = open(TAKE_VIDEO_TXT_FILE, O_WRONLY | O_APPEND | O_SYNC | O_CREAT, 0644);
-		if (fd == -1) {
-			AGLINK_ERROR("Error opening file\n");
-		} else {
-			if (gyro_en) {
-				write(fd, pContext->stConfig.strVideoSubDirName, strlen(pContext->stConfig.strVideoSubDirName));
-			} else {
-				write(fd, pContext->stConfig.strVideoFile, strlen(pContext->stConfig.strVideoFile));
-			}
-			write(fd, "\n", strlen("\n"));
-			close(fd);
-		}
-	} else {
-		result = -1;
-		error_code = AG_FAILED_WRITE_FILE;
-	}
+int ag_media_video_stop(void)
+{
+    if (!api_managed || !gpDemoAvAIGlassContext) return -ENOENT;
+    video_exit();
+    int result = aglink_take_video();
+    if (!result && error_code != AG_SUCCESS) result = -EIO;
+    api_managed = false;
+    api_output_path[0] = '\0';
+    return result;
+}
 
-	if (nFrameFd >= 0) {
-		close(nFrameFd);
-		nFrameFd = -1;
-	}
-	sync();
+void ag_media_video_pcm(const unsigned char *data, int length)
+{
+    if (data && length > 0) sendPcmData((uint8_t *)data, length);
+}
 
-_exit:
-	AWVideoInput_DeInit();
-	AW_MPI_SYS_Exit();
-	deleteDemoAvAIGlassContext(pContext);
-	AGLINK_INFO("ai_glass_take_video finish!\n");
-	log_quit();
-	return result;
-
-_err0:
-	deleteDemoAvAIGlassContext(pContext);
-	return result;
+/* The fastboot photo executable only handles completion. Persistent API capture
+ * reuses the RT Media JPEG path already used by aglink_take_thumb() below. */
+int ag_media_take_jpeg(const char *path, int channel, unsigned width,
+                       unsigned height, unsigned quality)
+{
+    PresetRtMediaChnConfig preset = {0};
+    VideoInputConfig config;
+    catch_jpeg_config jpeg = {0};
+    char *buffer = NULL;
+    int result = -EIO, fd = -1;
+    bool configured = false, created = false;
+    if (!path || !*path || channel < 0 || channel > 15 || !quality || quality > 100 ||
+        (!width != !height)) return -EINVAL;
+    if (gpDemoAvAIGlassContext) return -EBUSY;
+    if (AWVideoInput_Init() != 0) return -ENODEV;
+    if (AWVideoInput_GetPresetConfig(channel, &preset) != 0 || !preset.b_get_from_dts ||
+        preset.ch_id != channel || preset.out_mode != OUTPUT_MODE_YUV) { result = -ENODEV; goto done; }
+    if (!width) {
+        width = preset.jpg_w > 0 ? (unsigned)preset.jpg_w : (unsigned)preset.res_w;
+        height = preset.jpg_h > 0 ? (unsigned)preset.jpg_h : (unsigned)preset.res_h;
+    }
+    if (!width || !height || width > 8192 || height > 8192) { result = -EINVAL; goto done; }
+    size_t capacity = (size_t)width * height * 2 + 65536;
+    if (capacity > 64U * 1024U * 1024U) { result = -E2BIG; goto done; }
+    buffer = malloc(capacity);
+    if (!buffer) { result = -ENOMEM; goto done; }
+    configVideoInputConfigByPresetConfig(&config, &preset);
+    if (AWVideoInput_Configure(channel, &config) != 0) goto done;
+    configured = true;
+    if (AWVideoInput_Start(channel, 1) != 0 && AWVideoInput_Get_channel_state(channel) != VIDEO_INPUT_STATE_EXCUTING) goto done;
+    jpeg.channel_id = channel;
+    jpeg.width = width;
+    jpeg.height = height;
+    jpeg.qp = quality;
+    if (AWVideoInput_CatchJpegConfig(&jpeg) != 0) goto done;
+    int length = (int)capacity;
+    if (AWVideoInput_CatchJpeg(buffer, &length, channel) != 0 || length <= 0 || (size_t)length > capacity) goto done;
+    fd = open(path, O_WRONLY | O_CREAT | O_EXCL | O_NOFOLLOW | O_CLOEXEC, 0600);
+    if (fd < 0) { result = -errno; goto done; }
+    created = true;
+    size_t offset = 0;
+    while (offset < (size_t)length) {
+        ssize_t count = write(fd, buffer + offset, (size_t)length - offset);
+        if (count < 0 && errno == EINTR) continue;
+        if (count <= 0) { result = -(count < 0 ? errno : EIO); goto done; }
+        offset += (size_t)count;
+    }
+    result = fsync(fd) < 0 ? -errno : 0;
+ done:
+    if (fd >= 0 && close(fd) < 0 && !result) result = -errno;
+    free(buffer);
+    if (configured && AWVideoInput_Destroy(channel) != 0 && !result) result = -EIO;
+    if (AWVideoInput_DeInit() != 0 && !result) result = -EIO;
+    if (result && created) unlink(path);
+    return result;
 }
 
 static DemoAvAIGlassThumb *aglink_take_thumb(uint16_t width, uint16_t height)

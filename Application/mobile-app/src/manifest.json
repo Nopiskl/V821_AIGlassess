@@ -1,0 +1,13 @@
+{
+  "name": "V821 视界",
+  "appid": "",
+  "description": "V821 智能眼镜手机伴侣 · 设备伴侣",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "vueVersion": "3",
+  "uniStatistics": { "enable": false },
+  "h5": {
+    "title": "V821 · 视界",
+    "router": { "mode": "hash", "base": "./" }
+  }
+}

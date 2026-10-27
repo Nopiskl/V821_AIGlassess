@@ -36,7 +36,7 @@ export AIGLASS_STRIP_OUTPUT
 AIGLASS_BUILD_TOOL := $(AIGLASS_SDK_DIR)/scripts/aiglass-build.sh
 AIGLASS_BSP_TOOL := $(AIGLASS_SDK_DIR)/scripts/bsp-package.sh
 AIGLASS_RELEASE_TOOL := $(AIGLASS_SDK_DIR)/scripts/release.sh
-AIGLASS_COMPONENTS := lib normal photo audio download ota video livestream
+AIGLASS_COMPONENTS := lib media normal photo audio download ota video livestream
 
 .PHONY: help list paths doctor check prepare all package install release source-package \
 	release-clean clean distclean bsp-prepare bsp-deps bsp-package $(AIGLASS_COMPONENTS)
@@ -51,6 +51,8 @@ help:
 	@echo "  make doctor           检查基础工具链和 sysroot"
 	@echo "  make all              编译 libaglink 和全部 7 个应用"
 	@echo "  make video            只编译 libaglink + ai_glass_video"
+	@echo "  make -C ../mpp-media  查看常电 UI 的本地 MPP 库构建方式"
+	@echo "  make media            生成受控模式可选 libaiglass_media.a 开发接口"
 	@echo "  make normal           只编译 libaglink + ai_glass_normal"
 	@echo "  make package          编译全部并生成二进制 rootfs overlay"
 	@echo "  make install DESTDIR=/path/to/rootfs"

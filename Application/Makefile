@@ -11,7 +11,7 @@ AIGLASS_BOARD ?= aiglass_fastboot
 export AIGLASS_BSP_ROOT
 export AIGLASS_BOARD
 
-AIGLASS_TARGETS := help list paths doctor check prepare all lib normal photo audio \
+AIGLASS_TARGETS := help list paths doctor check prepare all lib media normal photo audio \
 	download ota video livestream package install release source-package \
 	release-clean clean distclean bsp-prepare bsp-deps bsp-package
 
@@ -19,3 +19,7 @@ AIGLASS_TARGETS := help list paths doctor check prepare all lib normal photo aud
 
 $(AIGLASS_TARGETS):
 	+@$(MAKE) -C "$(AIGLASS_APPS_DIR)" $@
+
+.PHONY: local-media
+local-media:
+	+@$(MAKE) -C "$(AIGLASS_APPLICATION_DIR)/mpp-media" all

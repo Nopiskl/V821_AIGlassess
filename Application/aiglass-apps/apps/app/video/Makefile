@@ -44,7 +44,9 @@ ifeq ($(MPPCFG_COMPILE_DYNAMIC_LIB), Y)
 # Public dynamic library
 LOCAL_SHARED_LIBS += \
     libawion \
-    librt_media
+    librt_media \
+    libaw_mpp \
+    libmedia_utils
 
 ifneq ($(filter Y, $(RT_MEDIA_SUPPORT_VENC_PARAM_DEBUG) $(MPP_VENC_SUPPORT_VENC_PARAM_DEBUG)),)
 LOCAL_SHARED_LIBS += \
@@ -365,7 +367,7 @@ LIB_SEARCH_PATHS := \
 #generate include directory flags for gcc.
 inc_paths := $(foreach inc,$(filter-out -I%,$(INCLUDE_DIRS)),$(addprefix -I, $(inc))) $(filter -I%, $(INCLUDE_DIRS))
 #Extra flags to give to the C compiler
-LOCAL_CFLAGS := $(CFLAGS) $(CEDARX_EXT_CFLAGS) $(inc_paths) -fPIC -Wall -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unused-label -Wno-unused-function
+LOCAL_CFLAGS := $(CFLAGS) $(CEDARX_EXT_CFLAGS) $(inc_paths) -std=gnu11 -fPIC -Wall -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unused-label -Wno-unused-function
 #Extra flags to give to the C++ compiler
 LOCAL_CXXFLAGS := $(CXXFLAGS) $(CEDARX_EXT_CFLAGS) $(inc_paths) -fPIC -Wall -Wno-unused-but-set-variable -Wno-unused-variable -Wno-unused-label -Wno-unused-function
 #Extra flags to give to the C preprocessor and programs that use it (the C and Fortran compilers).
@@ -408,9 +410,24 @@ $(LOCAL_TARGET_BIN):$(OBJS) $(DEPEND_LIBS)
 $(filter %.c.o, $(OBJS)): %.o: %
 	$(CC) $(LOCAL_CFLAGS) $(LOCAL_CPPFLAGS) -MD -MP -MF $(@:%=%.d) -c -o $@ $<
 
+# Development archive for a persistent LVGL host; main.c is deliberately absent.
+.PHONY: media-library
+media-library: libaiglass_media.a aiglass-media.ldflags
+
+ag_media.c.o: ../../src/media/ag_media.c ../../src/media/ag_media.h ../../src/media/ag_media_video.h
+	$(CC) $(LOCAL_CFLAGS) $(LOCAL_CPPFLAGS) -MD -MP -MF $@.d -c -o $@ $<
+
+libaiglass_media.a: take_video.c.o ag_media.c.o
+	$(AR) rcs $@ $^
+
+.PHONY: aiglass-media.ldflags
+aiglass-media.ldflags:
+	@printf '%s\n' '$(LOCAL_BIN_LDFLAGS) -lpthread -lm' > $@
+
 .PHONY: clean
 clean:
-	-rm -rf $(OBJS) $(OBJS:%=%.d) $(LOCAL_TARGET_BIN)
+	-rm -rf $(OBJS) $(OBJS:%=%.d) $(LOCAL_TARGET_BIN) ag_media.c.o ag_media.c.o.d libaiglass_media.a aiglass-media.ldflags
 
 #add *.h prerequisites
 -include $(OBJS:%=%.d)
+-include ag_media.c.o.d

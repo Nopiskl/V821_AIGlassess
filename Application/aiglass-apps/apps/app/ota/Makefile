@@ -24,8 +24,8 @@ DEAMON_SRCS += \
    ota.c \
    firmware.c
 
-$(TARGET_APP): $(DEAMON_SRCS)
-	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDES) $(LDFLAGS) $(LIBS) $(DEAMON_LIBS)
+$(TARGET_APP): $(DEAMON_SRCS) ../../src/misc/media_owner.h
+	$(CC) -o $@ $(DEAMON_SRCS) $(CFLAGS) $(INCLUDES) $(LDFLAGS) $(LIBS) $(DEAMON_LIBS)
 
 all: install $(TARGET_APP)
 

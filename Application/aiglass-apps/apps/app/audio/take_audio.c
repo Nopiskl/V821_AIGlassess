@@ -199,6 +199,7 @@ static int aglink_audio_app_rxcb(uint8_t type, uint8_t *data, int len)
 	AGLINK_DEBUG("type: %s, len:%d\n", aglink_ad_type_to_string(type), len);
 	switch (type) {
 	case AG_AD_AUDIO:
+			if (!data || len <= 0) break;
 		if (audio_state != AG_AUDIO_CH_START) {
 			AGLINK_ERROR("AUDIO has no START!,please wait\n");
 			break;
@@ -289,9 +290,8 @@ void aglink_audio_app_init(int dev_id)
 
 	aglink_channel_register_cb(aglink_audio_app_rxcb, audio_dev_id);
 
-	pthread_create(&ag_audio_thread, NULL, aglink_audio_task, NULL);
-
 	audio_app_exit = 0;
+	pthread_create(&ag_audio_thread, NULL, aglink_audio_task, NULL);
 }
 
 void aglink_audio_app_deinit(int dev_id)
@@ -299,4 +299,10 @@ void aglink_audio_app_deinit(int dev_id)
 	audio_app_exit = 1;
 	pthread_join(ag_audio_thread, NULL);
 	aglink_channel_delete(audio_dev_id);
+	if (take_audio.file) {
+		fflush(take_audio.file);
+		if (fsync(fileno(take_audio.file)) < 0) perror("sync interrupted audio");
+		fclose(take_audio.file);
+		take_audio.file = NULL;
+	}
 }

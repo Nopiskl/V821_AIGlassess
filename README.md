@@ -2,69 +2,84 @@
 
 Language: English | [中文](README_CN.md)
 
-This repository contains two V821 AI glasses related solutions:
-
-1. `v821-aiglass`
-2. `v821-aiglass_fastboot`
+This repository provides hardware designs, applications, and SDK patches for the `v821-aiglass` V821 AI glasses configuration.
 
 ## Project Overview
 
-### v821-aiglass
+`v821-aiglass` is a board-level configuration for AI glasses with an optical waveguide display.
 
-`v821-aiglass` is a board-level configuration solution for a complete AI Glass product form. It uses an optical waveguide module and is intended for a more complete professional AI glasses design.
+The system design covers:
 
-Currently supported capabilities:
+- LLM integration and image recognition through a companion mobile app.
+- `640 × 480` image and text output on a MicroOLED display.
+- One-button photo capture and video recording, dynamic image stabilization, and high-resolution imaging.
+- JL7016 standby Bluetooth management and music playback with DSP audio processing; V821 UI rendering and management in continuously powered UI mode.
+- Application downloads, file uploads, and device management between the phone and glasses.
+- An LVGL glasses interface and a phone companion.
 
-- Large model API integration and image recognition
-- `320 x 640` image display and text display
-- One-click photo capture, video recording, and related functions
+These features describe the system design. Implementation and validation scope are documented per module.
+The phone companion in this repository targets uni-app H5; its store provides local tools and templates,
+without glasses application installation.
 
-Due to product size constraints, this solution has completed testboard-level validation and module feasibility validation. Full device assembly is still in progress.
-
-<p>
-  <a href="Application/Image/1.png"><img src="Application/Image/1.png" width="180" alt="v821-aiglass preview 1"></a>
-  <a href="Application/Image/debug.png"><img src="Application/Image/debug.png" width="180" alt="v821-aiglass debug preview"></a>
-  <a href="Application/Image/2.png"><img src="Application/Image/2.png" width="180" alt="v821-aiglass preview 2"></a>
-</p>
-
-### v821-aiglass_fastboot
-
-`v821-aiglass_fastboot` is a fast boot solution based on fastboot. Because fastboot is tightly coupled with the SoC, development flexibility is relatively limited, and most of the configuration comes from the vendor reference solution.
-
-This solution refers to the Allwinner public `board` and the Sochip V821 AI glasses development board. It does not follow a traditional Linux boot flow. With fastboot, it can perform fast image capture, photo capture, and video recording, with the overall flow controlled within 1 second.
-
-Currently supported capabilities:
-
-- Large model API integration and speech recognition
-- AI calling, photo forwarding, and intelligent analysis
-- One-click photo capture, video recording, and related functions
-
-<p>
-  <a href="Application/Image/ai_glass.png"><img src="Application/Image/ai_glass.png" width="260" alt="v821-aiglass fastboot preview"></a>
-</p>
+Hardware validation covers the testboard and modules. Glasses hardware design files are available in [`Hardware/V821_ai_glasses`](Hardware/V821_ai_glasses/).
 
 ## Repository Layout
 
-### Hardware_for_test
+### Hardware
 
-Hardware test related content, using the AvaotaF1 design form factor as a reference.
+#### V821_ai_glasses
 
-A testboard is currently provided for module testing and functional validation, and it is intended for `v821-aiglass`. Smaller PCB designs will continue to be explored so the hardware can fit into a glasses structure.
+[`Hardware/V821_ai_glasses`](Hardware/V821_ai_glasses/) contains the optical waveguide glasses hardware project:
 
-<p>
-  <a href="Application/Image/testboard.png"><img src="Application/Image/testboard.png" width="180" alt="testboard preview"></a>
+- [EDA project](Hardware/V821_ai_glasses/ProPrj_光波导AR眼镜_2026-10-26.epro2): schematic and PCB design files in `.epro2` format.
+- [Schematic PDFs](Hardware/V821_ai_glasses/PDF_光波导AR眼镜.zip): a ZIP archive of schematic documents.
+- [Images](Hardware/V821_ai_glasses/Image/): hardware photos and PCB, FPC, and 3D design previews.
+
+**Hardware Gallery**
+
+| Glasses | PCB Design | Hardware Components |
+| :---: | :---: | :---: |
+| <a href="Hardware/V821_ai_glasses/Image/ai_glass.png"><img src="Hardware/V821_ai_glasses/Image/ai_glass.png" width="240" alt="Optical waveguide glasses"></a> | <a href="Hardware/V821_ai_glasses/Image/PCB_design.png"><img src="Hardware/V821_ai_glasses/Image/PCB_design.png" width="240" alt="Glasses PCB design"></a> | <a href="Hardware/V821_ai_glasses/Image/item_overview.png"><img src="Hardware/V821_ai_glasses/Image/item_overview.png" width="240" alt="Glasses hardware components"></a> |
+
+| Frame and Waveguide Module | Debug Log | Waveguide Display |
+| :---: | :---: | :---: |
+| <a href="Hardware/AI_glass_avaota_suit/Image/1.png"><img src="Hardware/AI_glass_avaota_suit/Image/1.png" width="240" alt="Frame and optical waveguide module"></a> | <a href="Hardware/AI_glass_avaota_suit/Image/debug.png"><img src="Hardware/AI_glass_avaota_suit/Image/debug.png" width="240" alt="Debug log display"></a> | <a href="Hardware/AI_glass_avaota_suit/Image/2.png"><img src="Hardware/AI_glass_avaota_suit/Image/2.png" width="240" alt="Optical waveguide display output"></a> |
+
+#### AI_glass_avaota_suit
+
+[`Hardware/AI_glass_avaota_suit`](Hardware/AI_glass_avaota_suit/) contains the AvaotaF1-based testboard for `v821-aiglass` module testing and functional validation. Files include an EDA project, schematic PDF, Gerber archive, STEP model, and test images.
+
+<p align="center">
+  <a href="Hardware/AI_glass_avaota_suit/Image/testboard-horizontal.svg"><img src="Hardware/AI_glass_avaota_suit/Image/testboard-horizontal.svg" width="350" alt="Testboard horizontal view"></a>
 </p>
 
 ### Application
 
-[`Application/aiglass-apps`](Application/aiglass-apps/README.md) contains the C/C++ application sources, AGLink support, and seven applications: normal, photo, audio, download, OTA, video, and livestream.
+[`Application/aiglass-apps`](Application/aiglass-apps/README.md) provides the controller-driven mode in which JL controls the device and V821 does not display a UI. It contains AGLink support and seven applications: normal, photo, audio, download, OTA, video, and livestream.
 
-[`Application/lvgl-home`](Application/lvgl-home/) provides a `320 × 320` glasses home
-screen for LVGL 8.x, showing the date, weekday, time, and seconds using text and outlines.
-It draws no background image and plugs into an existing LVGL application. LVGL itself is
-not bundled, and the UI is separate from the seven applications above.
+[`Application/lvgl-home`](Application/lvgl-home/README.md) provides a green outline glasses UI
+for LVGL 8.3/8.4, with a default landscape resolution of `640 × 480`.
+It includes AI chat, translation, phone communication, recording, camera, files, notes, and settings,
+using Linux interfaces and configurable HTTP services. The module plugs into an existing LVGL
+application. In the continuously powered UI mode, photo, video, and audio capture call V821 MPP
+directly through [`Application/mpp-media`](Application/mpp-media/README.md), with configurable local
+audio devices and channels. This path does not require AGLink. See [runtime modes](Application/RUNTIME_MODES.md)
+for ownership, startup, and protocol boundaries. The host application supplies LVGL, and the module has a
+separate build entry from the seven controller-driven applications. Development validation uses native
+Linux host builds and integration tests; operation on the V821 target device is unverified.
 
-The `Application/Makefile` provides a common build entry and defaults to the `aiglass_fastboot` board, whose OpenWrt configuration already enables these applications. A complete Tina V821 BSP, cross toolchain, and built dependencies are required; `SDK/TinaLinux 5.0` in this repository contains patches only.
+[`Application/mobile-app`](Application/mobile-app/README.md) is a separate uni-app / Vue 3 phone companion,
+targeting H5. It provides first-use pairing and Home, Features, Store, and Me tabs.
+The phone pairs using the six-digit code shown by LVGL, then exchanges actual files, notes, and messages
+with the running process through an HTTP bridge. The phone displays an offline state when the service is unavailable.
+
+[`Application/host-debug`](Application/host-debug/README.md) provides Linux host integration with a shared preview
+port for the actual LVGL display and phone UI. Builds, dependencies, logs, and test data stay in the workspace.
+Host mode excludes camera, microphone, backlight, real network provisioning, and JL access; AI services require
+separate configuration. See the [host simulator architecture (Chinese)](Application/host-debug/ARCHITECTURE.md)
+for source reuse, process and thread design, interfaces, pairing, storage, and testing boundaries.
+
+The `Application/Makefile` provides a common build entry for V821 applications. A complete Tina V821 BSP, cross toolchain, and built dependencies are required; `SDK/TinaLinux 5.0` in this repository contains patches only. The phone project uses separate npm commands.
 
 ```bash
 make -C Application list
@@ -77,13 +92,12 @@ See the [application guide](Application/aiglass-apps/README.md) for dependency p
 
 ### SDK/TinaLinux 5.0
 
-SDK patches and board-level configuration content, mainly including:
-
-- `v821-aiglass`
-- `v821-aiglass_fastboot`
+Contains SDK patches and board-level configuration for `v821-aiglass`.
 
 ## How to Use the Patches
 
-Copy the patch files to the corresponding SDK directories. For further board-level development, refer to the Allwinner online documentation:
+Copy the patch files to the corresponding SDK directories. Refer to the [Allwinner V821 documentation](https://developers.allwinnertech.com/docs) for board-level development.
 
-https://docs.aw-ol.com/docs/soc/v821/
+## Acknowledgments
+
+The hardware design in `Hardware/V821_ai_glasses` draws on [sgsax's PCB project on OSHWHub](https://oshwhub.com/sgsax/project_tiqnqiyt). We thank the original author for sharing the design files.

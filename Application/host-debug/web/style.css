@@ -1,0 +1,227 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #253249;
+  background: #eef1f6;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+header {
+  padding: 24px 32px;
+  background: #fff;
+  border-bottom: 1px solid #dfe5ee;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+h1 {
+  margin: 6px 0 0;
+  font-size: 23px;
+}
+h2,
+h3,
+p {
+  margin: 0;
+}
+h2 {
+  font-size: 16px;
+}
+h3 {
+  font-size: 13px;
+}
+p {
+  line-height: 1.7;
+  color: #68758d;
+}
+a {
+  color: #315ce8;
+  text-decoration: none;
+}
+.eyebrow {
+  color: #8190a8;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+main {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px;
+  flex-wrap: wrap;
+}
+.panel {
+  min-width: 0;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 30px #20305008;
+}
+.glasses {
+  width: 680px;
+}
+.phone {
+  width: 430px;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.panel-heading span,
+.panel-heading a {
+  font-size: 12px;
+}
+#connection {
+  color: #657b69;
+}
+.display {
+  width: 640px;
+  max-width: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #000;
+  line-height: 0;
+}
+#screen {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  cursor: crosshair;
+  aspect-ratio: 4 / 3;
+}
+.phone-message {
+  margin-top: 16px;
+  padding: 16px 18px;
+  border: 1px solid #dde5ef;
+  background: #f7f9fc;
+  border-radius: 12px;
+}
+.message-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+#message-state {
+  font-size: 11px;
+  color: #8593a9;
+}
+#phone-message {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 14px;
+  color: #344860;
+}
+.controls {
+  margin-top: 20px;
+}
+label {
+  display: block;
+  font-size: 12px;
+  color: #65748c;
+}
+.control-heading {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+button,
+select,
+textarea {
+  font: inherit;
+  border: 1px solid #d5ddeb;
+  background: #f7f9fd;
+  color: #26324a;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+button {
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+button:hover {
+  background: #e8eeff;
+}
+button:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+#screen:focus-visible {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+select {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+}
+.keys {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 12px 0 20px;
+}
+.keys button {
+  flex: 1;
+  min-width: 42px;
+}
+textarea {
+  width: 100%;
+  height: 76px;
+  resize: vertical;
+  margin-top: 8px;
+  font-size: 13px;
+}
+.control-footer {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+}
+#status {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+iframe {
+  display: block;
+  width: 100%;
+  height: 844px;
+  border: 1px solid #edf0f5;
+  border-radius: 12px;
+}
+.footnote {
+  font-size: 11px;
+  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  header {
+    display: block;
+    padding: 20px;
+  }
+  header p {
+    margin-top: 10px;
+    font-size: 12px;
+  }
+  main {
+    padding: 12px;
+  }
+  .panel {
+    padding: 14px;
+  }
+  .control-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}

@@ -18,8 +18,8 @@ DEAMON_SRCS += \
    main.c \
    take_audio.c
 
-$(TARGET_APP): $(DEAMON_SRCS)
-	$(CC) -o $@ $^ $(CFLAGS) $(INCLUDES) $(LDFLAGS) -L$(CONFIG_PREFIX)/usr/lib -L$(CONFIG_PREFIX)/lib -L$(STAGING_DIR)/usr/lib $(DEAMON_LIBS)
+$(TARGET_APP): $(DEAMON_SRCS) ../../src/misc/media_owner.h
+	$(CC) -o $@ $(DEAMON_SRCS) $(CFLAGS) $(INCLUDES) $(LDFLAGS) -L$(CONFIG_PREFIX)/usr/lib -L$(CONFIG_PREFIX)/lib -L$(STAGING_DIR)/usr/lib $(DEAMON_LIBS)
 
 all: install $(TARGET_APP)
 
